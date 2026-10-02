@@ -1,0 +1,695 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schema Generator v6</title>
+<style>
+:root{--bg:#f4f7f5;--cd:#fff;--bd:#d5ddd8;--tx:#1a3a3a;--mt:#6b8a7a;--pr:#2d6a5c;--pl:#e8f0ec;
+  --ac:#d4956a;--dg:#c0392b;--ok:#27ae60;--pu:#7c5cbf;--ft:'Segoe UI',system-ui,sans-serif;--mn:'Cascadia Code','Consolas',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--ft);background:var(--bg);color:var(--tx);font-size:11px;line-height:1.35}
+.app{max-width:1560px;margin:0 auto;padding:12px}
+.hdr{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.hdr h1{font-size:16px;font-weight:700;color:var(--pr)}
+.hdr .tag{font-size:8px;padding:1px 5px;background:var(--pl);color:var(--pr);border-radius:4px;font-weight:700}
+.hdr .sub{font-size:9px;color:var(--mt)}
+.hdr .acts{margin-left:auto;display:flex;gap:6px;align-items:center}
+.btn{padding:6px 14px;font-size:11px;font-weight:700;border:none;border-radius:5px;cursor:pointer}
+.btn:disabled{opacity:.3;cursor:not-allowed}
+.btn-g{background:var(--pr);color:#fff}.btn-g:hover{background:#245a4e}
+.btn-d{background:var(--ok);color:#fff}.btn-d:hover{background:#219a52}
+.btn-s{background:var(--pl);color:var(--pr);padding:5px 9px}.btn-s:hover{background:#d9e6df}
+.btn:focus-visible{outline:2px solid var(--ac);outline-offset:2px}
+.params{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:10px}
+@media(max-width:1200px){.params{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:760px){.params{grid-template-columns:1fr}}
+.p{background:var(--cd);border:1px solid var(--bd);border-radius:7px;padding:8px 10px}
+.p h3{font-size:10px;font-weight:700;color:var(--pr);margin-bottom:6px;padding-bottom:3px;border-bottom:1px solid var(--pl)}
+.f{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;gap:4px}
+.f label{font-size:10px;white-space:nowrap;flex-shrink:0}
+.f .v{font-family:var(--mn);font-size:9px;color:var(--pr);font-weight:700;min-width:30px;text-align:right}
+.f input[type=range]{flex:1;height:3px;-webkit-appearance:none;background:var(--bd);border-radius:2px;min-width:50px}
+.f input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:10px;height:10px;border-radius:50%;background:var(--pr);cursor:pointer}
+.f select,.f input[type=text],.f input[type=number]{flex:1;padding:2px 4px;font-size:9px;border:1px solid var(--bd);border-radius:4px;min-width:0;font-family:var(--ft)}
+.f .pfx{max-width:70px}
+.tw{display:flex;align-items:center;justify-content:space-between;margin-bottom:3px}
+.tw label{font-size:9px;flex:1}
+.sw{position:relative;width:24px;height:13px;cursor:pointer;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0}
+.sw .s{position:absolute;inset:0;background:var(--bd);border-radius:7px;transition:.2s}
+.sw .s:before{content:'';position:absolute;width:7px;height:7px;left:3px;bottom:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+.s{background:var(--pr)}
+.sw input:checked+.s:before{transform:translateX(11px)}
+.sw input:focus-visible+.s{outline:2px solid var(--ac)}
+.out{background:var(--cd);border:1px solid var(--bd);border-radius:7px;padding:10px}
+.sg{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:4px;margin-bottom:8px}
+.sc{padding:5px;background:var(--pl);border-radius:4px;text-align:center}
+.sc .n{font-size:15px;font-weight:800;color:var(--pr);font-family:var(--mn)}
+.sc .l{font-size:8px;color:var(--mt)}
+.wn{padding:3px 6px;margin-bottom:2px;border-radius:3px;font-size:9px}
+.wn.e{background:#fde8e8;color:var(--dg)}.wn.i{background:var(--pl);color:var(--pr)}.wn.w{background:#fff3e6;color:#9a5a1e}
+.tb{display:flex;border-bottom:2px solid var(--bd);margin-bottom:6px;flex-wrap:wrap}
+.tb button{padding:3px 10px;font-size:9px;font-weight:600;border:none;background:none;cursor:pointer;color:var(--mt);border-bottom:2px solid transparent;margin-bottom:-2px}
+.tb button.on{color:var(--pr);border-bottom-color:var(--pr)}
+.pre{background:#1a2a2a;color:#a8d8b8;padding:8px;border-radius:5px;font-family:var(--mn);font-size:8px;line-height:1.3;max-height:400px;overflow:auto;white-space:pre;tab-size:6}
+table.dt{width:100%;border-collapse:collapse;font-size:9px}
+table.dt th{text-align:left;padding:2px 4px;background:var(--pl);color:var(--pr);font-weight:600;position:sticky;top:0}
+table.dt td{padding:2px 4px;border-bottom:1px solid var(--bd)}
+.th{max-height:380px;overflow:auto}
+.lg{font-size:8px;color:var(--mt);max-height:380px;overflow:auto;font-family:var(--mn)}
+.lg div{padding:1px 0}.lg .ok::before{content:'✓ ';color:var(--ok)}.lg .wr::before{content:'⚠ ';color:var(--ac)}.lg .er::before{content:'✗ ';color:var(--dg)}
+.mt0{text-align:center;padding:30px;color:var(--mt)}
+.chk{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:6px;margin-bottom:8px}
+.chk div{padding:6px 8px;border-radius:4px;background:var(--pl);font-size:9px}
+.chk b{font-family:var(--mn);font-size:13px;display:block}
+.chk .bad{background:#fde8e8;color:var(--dg)}.chk .good{color:var(--ok)}
+.cal{font-family:var(--mn);font-size:9px;line-height:1.5;white-space:pre-wrap}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="hdr">
+  <h1>Schema Generator</h1><span class="tag">v6</span>
+  <span class="sub">Läsårsmodell · tjänstefördelning · resurs &amp; samundervisning · namnprofiler · CP1252</span>
+  <div class="acts">
+    <button class="btn btn-s" onclick="rollNames()" title="Slumpa skolnamn och kommun">Nytt namn</button>
+    <button class="btn btn-s" onclick="rollSeed()" title="Slumpa seed">Ny seed</button>
+    <button class="btn btn-g" onclick="runUI()">Generera</button>
+    <button class="btn btn-d" id="bD" onclick="dl()" disabled>Ladda ner</button>
+  </div>
+</div>
+<div class="params" id="params"></div>
+<div class="out">
+  <div id="mt" class="mt0"><p style="font-size:24px">📅</p><p>Ställ in parametrar → <b>Generera</b></p>
+  <p style="font-size:9px;margin-top:4px">Allt innehåll är fiktivt. Ortnamn, skolnamn, signaturer och kalender genereras från seed.</p></div>
+  <div id="rs" style="display:none">
+    <div class="sg" id="sG"></div><div id="wG"></div>
+    <div class="tb" id="tB"></div><div id="tC"></div>
+  </div>
+</div>
+</div>
+<script>
+// ═══════════════════════════════════════════════════════════════
+// 0. RNG & small utilities
+// ═══════════════════════════════════════════════════════════════
+let R=Math.random;
+function seed(s){let a=(s|0)||1;R=()=>{a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const rn=()=>R(),ri=(a,b)=>Math.floor(rn()*(b-a+1))+a,pk=a=>a[Math.floor(rn()*a.length)],chance=p=>rn()<p;
+const sh=a=>{const r=[...a];for(let i=r.length-1;i>0;i--){const j=Math.floor(rn()*(i+1));[r[i],r[j]]=[r[j],r[i]]}return r};
+const r5=m=>Math.round(m/5)*5,clamp=(x,a,b)=>Math.max(a,Math.min(b,x));
+const hm=m=>`${String(Math.floor(m/60)).padStart(2,'0')}:${String(m%60).padStart(2,'0')}`;
+const toMin=s=>{const[h,m]=s.split(':').map(Number);return h*60+m};
+function uid(){const h='0123456789ABCDEF';let s='';for(let i=0;i<32;i++){s+=i===12?'4':i===16?pk(['8','9','A','B']):h[Math.floor(rn()*16)];if([7,11,15,19].includes(i))s+='-'}return s}
+function wpick(items){let t=0;for(const[,w]of items)t+=w;let x=rn()*t;for(const[it,w]of items){x-=w;if(x<=0)return it}return items[items.length-1][0]}
+const ascii=s=>s.replace(/[åä]/g,'a').replace(/ö/g,'o').replace(/[ÅÄ]/g,'A').replace(/Ö/g,'O').replace(/é/g,'e').replace(/ü/g,'u').replace(/[^A-Za-z0-9.\-]/g,'');
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const DAYS=['Måndag','Tisdag','Onsdag','Torsdag','Fredag'];
+
+// ═══════════════════════════════════════════════════════════════
+// 1. Encoding — Novaschem text files are ANSI (Windows-1252), CRLF
+// ═══════════════════════════════════════════════════════════════
+const CP1252_HI={0x20AC:0x80,0x201A:0x82,0x0192:0x83,0x201E:0x84,0x2026:0x85,0x2020:0x86,0x2021:0x87,0x02C6:0x88,0x2030:0x89,0x0160:0x8A,0x2039:0x8B,0x0152:0x8C,0x017D:0x8E,0x2018:0x91,0x2019:0x92,0x201C:0x93,0x201D:0x94,0x2022:0x95,0x2013:0x96,0x2014:0x97,0x02DC:0x98,0x2122:0x99,0x0161:0x9A,0x203A:0x9B,0x0153:0x9C,0x017E:0x9E,0x0178:0x9F};
+function encodeCP1252(s){const out=new Uint8Array(s.length);let n=0;for(const ch of s){const c=ch.codePointAt(0);out[n++]=(c<0x80||(c>=0xA0&&c<=0xFF))?c:(CP1252_HI[c]!==undefined?CP1252_HI[c]:0x3F)}return out.subarray(0,n)}
+function encodeUTF8(s){return new TextEncoder().encode(s)}
+
+// ═══════════════════════════════════════════════════════════════
+// 2. Calendar — a läsår is built from dates, never from a fixed week string
+// ═══════════════════════════════════════════════════════════════
+const DAYMS=86400000,D=(y,m,d)=>new Date(Date.UTC(y,m-1,d)),addD=(d,n)=>new Date(d.getTime()+n*DAYMS),dow=d=>d.getUTCDay()||7;
+function isoWeek(d){const t=new Date(d.getTime());t.setUTCDate(t.getUTCDate()+4-dow(t));const y0=Date.UTC(t.getUTCFullYear(),0,1);return{week:Math.ceil(((t.getTime()-y0)/DAYMS+1)/7),year:t.getUTCFullYear()}}
+function mondayOf(year,week){const j4=D(year,1,4);return addD(addD(j4,-(dow(j4)-1)),(week-1)*7)}
+function easter(y){const a=y%19,b=Math.floor(y/100),c=y%100,d=Math.floor(b/4),e=b%4,f=Math.floor((b+8)/25),g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7,m=Math.floor((a+11*h+22*l)/451);return D(y,Math.floor((h+l-7*m+114)/31),((h+l-7*m+114)%31)+1)}
+const dm=d=>`${d.getUTCDate()}/${d.getUTCMonth()+1}`,isoD=d=>d.toISOString().slice(0,10);
+const SPORTLOV={vast:7,syd:8,ost:9,norr:10};
+
+function buildCalendar(P){
+  const Y=+P.year,start=addD(mondayOf(Y,+P.startWeek),+P.startDow-1),end=addD(mondayOf(Y+1,+P.endWeek),+P.endDow-1);
+  const w51f=addD(mondayOf(Y,51),4),w52m=mondayOf(Y,52);
+  const julEnd=pk([w51f,w51f,w52m,addD(w52m,1),addD(w52m,2)]);
+  const w2m=mondayOf(Y+1,2);const vtStart=pk([w2m,addD(w2m,1),addD(w2m,2),addD(w2m,3),mondayOf(Y+1,3)]);
+  const sportW=SPORTLOV[P.region]||9,eas=easter(Y+1),easW=isoWeek(eas).week,paskW=P.paskBefore?easW:easW+1;
+  const hol=new Set([isoD(D(Y+1,1,6)),isoD(D(Y+1,5,1)),isoD(D(Y+1,6,6)),isoD(addD(eas,-2)),isoD(addD(eas,1))]);
+  const asc=addD(eas,39);hol.add(isoD(asc));if(chance(.7))hol.add(isoD(addD(asc,1)));
+  const days=[];
+  for(let d=start;d<=end;d=addD(d,1)){if(dow(d)>5)continue;const w=isoWeek(d);
+    if(d>julEnd&&d<vtStart)continue;if(w.year===Y&&w.week===44)continue;if(w.year===Y+1&&(w.week===sportW||w.week===paskW))continue;
+    if(hol.has(isoD(d)))continue;days.push(d)}
+  const cand=days.filter((d,i)=>i>5&&i<days.length-5&&(dow(d)===1||dow(d)===5));
+  const stud=sh(cand).slice(0,+P.studiedagar),sset=new Set(stud.map(isoD));
+  const school=days.filter(d=>!sset.has(isoD(d)));
+  const segs=[];let cur=null;
+  for(const d of school){const w=isoWeek(d),key=w.year+'-'+w.week;if(!cur||cur.key!==key){cur={key,week:w.week,year:w.year,days:[]};segs.push(cur)}cur.days.push(d)}
+  segs.forEach(s=>{s.first=s.days[0];s.last=s.days[s.days.length-1];s.str=s.days.length>1?`${dm(s.first)}-${dm(s.last)}`:dm(s.first);s.ht=s.first.getUTCFullYear()===Y});
+  return{Y,start,end,julEnd,vtStart,segs,school,studiedagar:stud,sportW,paskW,weeks:segs.map(s=>s.week),label:`${Y}/${String(Y+1).slice(2)}`};
+}
+function buildPeriods(P,cal){
+  const htS=cal.segs.filter(s=>s.ht),vtS=cal.segs.filter(s=>!s.ht);
+  let ht=htS,vt=vtS;
+  if(P.dq>=1&&chance(.3))ht=htS.slice(0,htS.length-ri(1,2));
+  if(P.dq>=1&&chance(.2))vt=vtS.slice(1);
+  const per={HT:{segs:ht},VT:{segs:vt}};
+  if(P.perUV){per.UV={segs:cal.segs.filter(s=>s.week%2===1)};per.JV={segs:cal.segs.filter(s=>s.week%2===0)}}
+  if(P.perP4){for(let k=0;k<4;k++)per['P'+(k+1)]={segs:cal.segs.filter((s,i)=>i%4===k)}}
+  Object.values(per).forEach(p=>{p.weeks=p.segs.map(s=>s.week);p.cal=p.segs.map(s=>s.str).join(', ')});
+  return per;
+}
+function parseWeeks(str){const out=[];String(str||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{const m=x.match(/^(\d+)-(\d+)$/);if(m){for(let w=+m[1];w<=+m[2];w++)out.push(w)}else if(/^\d+$/.test(x))out.push(+x)});return out}
+function compressWeeks(ws){const o=[];let i=0;while(i<ws.length){let j=i;while(j+1<ws.length&&ws[j+1]===ws[j]+1)j++;o.push(j>i?`${ws[i]}-${ws[j]}`:String(ws[i]));i=j+1}return o.join(', ')}
+
+// ═══════════════════════════════════════════════════════════════
+// 3. Names — generic pools; fictional places built from nature compounds.
+// ═══════════════════════════════════════════════════════════════
+const FN_F=['Anna','Maria','Karin','Eva','Sara','Lena','Helena','Ingrid','Sofia','Emma','Katarina','Malin','Therese','Camilla','Jenny','Kristina','Pernilla','Ulrika','Åsa','Diana','Fatima','Irina','Leyla','Nadia','Petra','Linnea','Elin','Hanna','Ida','Johanna','Josefin','Julia','Klara','Lisa','Lovisa','Matilda','Moa','Nathalie','Rebecka','Sanna','Stina','Tove','Wilma','Alva','Agnes','Amina','Aisha','Zahra','Yasmin','Mariam','Noor','Dalia','Selma','Elsa','Astrid','Signe','Märta','Gunilla','Monica','Birgitta','Marianne','Annika','Cecilia','Charlotta','Jessica','Madeleine','Susanne','Veronica','Carina','Mona','Ebba','Freja','Saga','Tilda','Nova'];
+const FN_M=['Erik','Lars','Johan','Anders','Magnus','Mikael','Fredrik','Peter','Gustav','Nils','Henrik','Olof','Björn','Daniel','Karl','Martin','Rasmus','Viktor','Christian','Elias','Hassan','Jamal','Mohammad','Omar','Tobias','Oskar','Simon','Jonas','Andreas','Niklas','Patrik','Stefan','Thomas','Mattias','Marcus','Joakim','Jakob','Emil','Hugo','Axel','Albin','Arvid','Filip','Isak','Leo','Liam','Noah','Oliver','William','Adam','Ali','Ahmed','Yusuf','Ibrahim','Samir','Tariq','Amir','Kemal','Dejan','Marko','Tomasz','Piotr','Juho','Mikko','Sven','Bengt','Göran','Håkan','Kjell','Rolf','Torbjörn','Ulf','Jan','Per','Bo','Hans','Leif'];
+const LN=['Andersson','Johansson','Karlsson','Nilsson','Eriksson','Larsson','Olsson','Persson','Svensson','Gustafsson','Pettersson','Jonsson','Jansson','Hansson','Bengtsson','Jönsson','Lindberg','Magnusson','Olofsson','Lindström','Lindqvist','Lindgren','Berg','Bergström','Lundberg','Lundgren','Lund','Mattsson','Berglund','Fredriksson','Sandberg','Henriksson','Forsberg','Sjöberg','Wallin','Engström','Eklund','Danielsson','Håkansson','Lundin','Björk','Bergman','Nyström','Holm','Samuelsson','Fransson','Wikström','Isaksson','Arvidsson','Nyberg','Blom','Ekström','Åberg','Strömberg','Hedlund','Sundberg','Sjögren','Ek','Blomqvist','Abrahamsson','Martinsson','Öberg','Andreasson','Strand','Åkesson','Norberg','Lindholm','Månsson','Hellström','Dahl','Falk','Ahmed','Ali','Hassan','Mohamed','Hussein','Ibrahim','Khalil','Osman','Yusuf','Nguyen','Kowalski','Nowak','Petrov','Jovanović','Hadžić','Virtanen','Korhonen','Nurmi','Haddad','Karimi','Rezai','Said','Omar','Mahmoud','Lindahl','Sandström','Söderberg','Nordström','Hagström','Vikander','Rosén','Boström','Hultgren','Åström','Vestlund','Brännström','Törnqvist','Edlund','Grönberg'];
+const STEM=['Ek','Björk','Tall','Gran','Alm','Lind','Hassel','Rönn','Asp','Furu','Vide','Lönn','Hägg','Sten','Sjö','Äng','Dal','Kärr','Mo','Hed','Lund','Ås','Berg','Skog','Ljung','Mossa','Säv','Vass','Näckros','Enebärs','Oxel','Pil','Sälg','Humle','Klöver','Timotej','Rapp','Tranbärs','Lingon','Hallon','Blåbärs','Nypon','Fläder','Syren','Måne','Sol','Stjärn','Regn','Vind','Snö'];
+const SUFFIX=['backen','liden','dalen','ängen','viken','udden','hagen','lunden','berga','torp','hult','holmen','gärdet','slätten','höjden','kullen','myren','stranden','bron','vallen','åsen','mon','hyttan','kärret','ängarna'];
+const KOMMUN_SUFFIX=['vik','stad','by','berga','sund','hamn','sjö','ryd','tuna','dal','fors'];
+function fictionalPlace(){return pk(STEM)+pk(SUFFIX)}
+function fictionalSchool(){const st=fictionalPlace();return chance(.5)?`${st}s skola`:(st.endsWith('a')?`${st}skolan`:`${st}skolan`)}
+function fictionalKommun(){let k='';for(let i=0;i<20;i++){k=pk(STEM)+pk(KOMMUN_SUFFIX);if(!/s$/i.test(k))break}return`${k}s kommun`}
+
+// Signatures: real schedules use short codes; anonymised ones use Initial+Surname
+const SIG_STYLES={abc:'Abc (3 bokstäver)',ABC:'ABC (versaler)',init:'ESvensson (initial+efternamn)',first:'EvaS (förnamn+initial)',mixed:'Blandat'};
+function makeSig(first,last,style,used){
+  const f=ascii(first),l=ascii(last.replace(/-.*$/,''));const F=f.toUpperCase(),L=l.toUpperCase();
+  let c=[];
+  if(style==='mixed')style=pk(['abc','abc','ABC','init','first']);
+  if(style==='abc'||style==='ABC'){c=[f[0]+l.slice(0,2),f[0]+l[0]+(l[2]||'x'),f.slice(0,2)+l[0],f[0]+l[1]+(l[2]||'x'),f[0]+l[0]+l[l.length-1],f.slice(0,2)+l.slice(0,2),f[0]+l.slice(0,3)]}
+  else if(style==='init'){c=[first[0]+last,first.slice(0,2)+last]}
+  else{c=[first+last[0],first+last.slice(0,2),first.toLowerCase()+last[0].toLowerCase()]}
+  const norm=s=>style==='ABC'?s.toUpperCase():style==='abc'?s[0].toUpperCase()+s.slice(1).toLowerCase():s;
+  for(const x of c){const n=norm(x);const k=n.toLowerCase();if(!used.has(k)){used.add(k);return n}}
+  for(let i=2;i<20;i++){const n=norm(c[0])+i;const k=n.toLowerCase();if(!used.has(k)){used.add(k);return n}}
+  return norm(c[0])+ri(100,999);
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 4. Subjects — minutes/week per stage (timplan-shaped), naming profiles
+// ═══════════════════════════════════════════════════════════════
+const SUBJ={
+  fsk:{short:'Fsk',off:'FSK',long:'Förskoleklass',len:'fsk',cat:'core'},
+  sv:{short:'Sv',off:'SV',long:'Svenska',len:'core',cat:'core',tp:{lag:380,mel:290,hog:165}},
+  sva:{short:'SvA',off:'SVA',long:'Svenska som andraspråk',len:'core',cat:'core'},
+  ma:{short:'Ma',off:'MA',long:'Matematik',len:'core',cat:'core',tp:{lag:235,mel:230,hog:225}},
+  en:{short:'En',off:'EN',long:'Engelska',len:'core',cat:'core',tp:{lag:35,mel:125,hog:115}},
+  idh:{short:'Idh',off:'IDH',long:'Idrott och hälsa',len:'idh',cat:'prac',rm:'gym',tp:{lag:80,mel:90,hog:170}},
+  mu:{short:'Mu',off:'MU',long:'Musik',len:'mu',cat:'prac',rm:'musik',tp:{lag:40,mel:45,hog:45}},
+  bl:{short:'Bl',off:'BL',long:'Bild',len:'bl',cat:'prac',rm:'bild',tp:{lag:30,mel:45,hog:55}},
+  tk:{short:'Tk',off:'TK',long:'Teknik',len:'tk',cat:'core',tp:{lag:25,mel:40,hog:50}},
+  hkk:{short:'Hkk',off:'HKK',long:'Hem- och konsumentkunskap',len:'hkk',cat:'prac',rm:'hkk',tp:{lag:0,mel:20,hog:25}},
+  no:{short:'NO',off:'NO',long:'Naturorienterande ämnen',len:'core',cat:'core',tp:{lag:80,mel:110,hog:150}},
+  bi:{short:'Bi',off:'BI',long:'Biologi',len:'core',cat:'core',rm:'no'},fy:{short:'Fy',off:'FY',long:'Fysik',len:'core',cat:'core',rm:'no'},ke:{short:'Ke',off:'KE',long:'Kemi',len:'core',cat:'core',rm:'no'},
+  so:{short:'SO',off:'SO',long:'Samhällsorienterande ämnen',len:'core',cat:'core',tp:{lag:115,mel:190,hog:200}},
+  hi:{short:'Hi',off:'HI',long:'Historia',len:'core',cat:'core'},ge:{short:'Ge',off:'GE',long:'Geografi',len:'core',cat:'core'},re:{short:'Re',off:'RE',long:'Religionskunskap',len:'core',cat:'core'},sh:{short:'Sh',off:'SH',long:'Samhällskunskap',len:'core',cat:'core'},
+  sl:{short:'Sl',off:'SL',long:'Slöjd',len:'sl',cat:'prac',rm:'sltr',tp:{lag:30,mel:80,hog:80}},
+  sltr:{short:'Sltr',off:'SL',long:'Slöjd trä och metall',len:'sl',cat:'prac',rm:'sltr'},sltx:{short:'Sltx',off:'SL',long:'Slöjd textil',len:'sl',cat:'prac',rm:'sltx'},
+  fr:{short:'Fr',off:'M2FRA',long:'Franska',len:'core',cat:'lang',tp:{lag:0,mel:27,hog:155}},sp:{short:'Sp',off:'M2SPA',long:'Spanska',len:'core',cat:'lang'},ty:{short:'Ty',off:'M2DEU',long:'Tyska',len:'core',cat:'lang'},
+  asv:{short:'Sv/En',off:'ASV',long:'Språkval svenska/engelska',len:'core',cat:'lang'},
+  ml:{short:'ML',off:'ML',long:'Modersmål',len:'ml',cat:'ml'}
+};
+const LEN={core:{set:[40,45,50,55,60,65,70,75,80],t:55},idh:{set:[60,70,80],t:70},mu:{set:[40,45,50,60],t:45},bl:{set:[45,60,80],t:60},tk:{set:[45,50,60,80],t:60},hkk:{set:[80,90,100,120],t:100},sl:{set:[80,90,100],t:90},ml:{set:[60],t:60},fsk:{set:[60,90,120],t:90}};
+const ML_LANGS=[['Arabiska','ARA'],['Somaliska','SOM'],['Persiska','FAS'],['Dari','PRS'],['Kurdiska','KMR'],['Polska','POL'],['Finska','FIN'],['Tigrinja','TIR'],['Bosniska','BOS'],['Albanska','SQI'],['Turkiska','TUR'],['Spanska','SPA'],['Ryska','RUS'],['Ukrainska','UKR'],['Vietnamesiska','VIE'],['Thailändska','THA'],['Engelska','ENG'],['Tyska','DEU'],['Portugisiska','POR'],['Serbiska','SRP'],['Rumänska','RON'],['Grekiska','ELL']];
+// Windows COLORREF integers (0x00BBGGRR); most rows are white in real files
+const PALETTE=[16777215,16777215,16777215,8454016,16742911,4227327,8454143,8432127,16777088,12615680,4227072,8421440,16711935,16733011,16711808,4868863,13421823,10079487,16744576,12632256];
+function splitMinutes(M,lenKey,dq,st){
+  const L0=LEN[lenKey]||LEN.core;const L=(st==='lag'||st==='fsk')&&lenKey==='core'?{set:L0.set,t:45}:L0;let n=clamp(Math.round(M/L.t),1,6);
+  if(M<=L.set[0]+10)n=1;
+  let base=r5(M/n);const mn=L.set[0],mx=L.set[L.set.length-1];
+  base=clamp(base,mn,mx);const lens=Array(n).fill(base);
+  let diff=r5(M-base*n);let i=0;
+  while(diff>=5&&i<40){const k=i%n;if(lens[k]+5<=mx){lens[k]+=5;diff-=5}i++}
+  while(diff<=-5&&i<80){const k=i%n;if(lens[k]-5>=mn){lens[k]-=5;diff+=5}i++}
+  if(dq>=1&&chance(.25)){const k=ri(0,n-1);lens[k]=clamp(lens[k]+pk([-10,-5,5,10]),mn,mx)}
+  return lens;
+}
+function stageOf(y){return y===0?'fsk':y<=3?'lag':y<=6?'mel':'hog'}
+
+// ═══════════════════════════════════════════════════════════════
+// 5. generate(P) — DOM-free. Returns everything the UI and tests need.
+// ═══════════════════════════════════════════════════════════════
+const COMP={
+  fsk:[['fsk',['fsk','sv','ma','so','no']]],
+  lag:[['core',['sv','ma','en','so','no','tk','bl','mu','fsk']],['idh',['idh']],['sl',['sl','sltr','sltx']],['sva',['sva']]],
+  mel:[['core',['sv','ma','en','so','no','tk','bl','asv']],['idh',['idh']],['mu',['mu']],['sltr',['sltr','sl']],['sltx',['sltx','sl']],['hkk',['hkk']],['sva',['sva']],['lang',['fr','sp','ty','en','asv']],['bltk',['bl','tk']]],
+  hog:[['mano',['ma','fy','ke','tk','no']],['nobi',['bi','ke','fy','no']],['sven',['sv','en','asv']],['svsva',['sv','sva']],['enlang',['en','fr','sp','ty','asv']],['soh',['hi','ge','re','sh','so']],['idh',['idh']],['mu',['mu']],['bl',['bl']],['sltr',['sltr','sl']],['sltx',['sltx','sl']],['hkk',['hkk']],['sva',['sva']],['tkbl',['tk','bl']]]
+};
+const PRIMARY={ // subject -> comp group that staffs it (per stage); [group,weight] lists allow splitting
+  lag:{sv:'core',ma:'core',en:'core',so:'core',no:'core',tk:'core',bl:'core',mu:'core',fsk:'core',idh:'idh',sl:'sl',sltr:'sl',sltx:'sl',sva:'sva'},
+  mel:{sv:'core',ma:'core',en:'core',so:'core',no:'core',tk:'core',bl:'core',idh:'idh',mu:'mu',sl:'sltr',sltr:'sltr',sltx:'sltx',hkk:'hkk',sva:'sva',fr:'lang',sp:'lang',ty:'lang',asv:'lang'},
+  hog:{ma:'mano',tk:'mano',fy:'mano',ke:'nobi',bi:'nobi',no:'nobi',sv:'sven',en:'sven',sva:'svsva',fr:'enlang',sp:'enlang',ty:'enlang',asv:'enlang',so:'soh',hi:'soh',ge:'soh',re:'soh',sh:'soh',idh:'idh',mu:'mu',bl:'bl',sl:'sltr',sltr:'sltr',sltx:'sltx',hkk:'hkk'}
+};
+const CORE_SET=new Set(['sv','ma','en','so','no','bi','fy','ke','hi','ge','re','sh']);
+const ROLE_VOCAB={en:{teacher:'',admin:'Admin',spec:'',resurs:'Student Assistant',ml:'',fritids:'After-school'},sv:{teacher:'',admin:'Administration',spec:'Specialpedagog',resurs:'Elevassistent',ml:'Modersmålslärare',fritids:'Fritidspedagog'},blank:{teacher:'',admin:'',spec:'',resurs:'',ml:'',fritids:''}};
+
+function generate(P){
+  const log=[];const L=(m,t='ok')=>log.push({m,t});
+  seed(+P.sd);const dq=+P.dq;
+  // ── Fictional identity ──
+  const schoolName=(P.nm||'').trim()||fictionalSchool();
+  const kommun=(P.kommun||'').trim()||fictionalKommun();
+  const stem=(ascii(schoolName).toLowerCase().replace(/(s|skolan|skola)+$/,'').replace(/s$/,'')||'skola');
+  const domain=chance(.5)?`${stem}.se`:`edu.${ascii(kommun.replace(/s kommun$/,'')).toLowerCase()}.se`;
+  let prefix=(P.prefix||'').trim();
+  L(`Skola: ${schoolName} (${kommun}) · seed ${P.sd} · kvalitet ${['Perfekt','Realistisk','Stökig','Kaos'][dq]}`);
+  // ── Calendar ──
+  const cal=buildCalendar(P),per=buildPeriods(P,cal);
+  const allWeeks=compressWeeks(cal.weeks);
+  L(`Läsår ${cal.label}: ${cal.segs.length} skolveckor (v${cal.weeks[0]}–v${cal.weeks[cal.weeks.length-1]}), sportlov v${cal.sportW}, påsklov v${cal.paskW}, ${cal.studiedagar.length} studiedagar`);
+  const weeksOf=(period,explicit)=>explicit?explicit:period&&per[period]?compressWeeks(per[period].weeks):allWeeks;
+  // ── Subjects: display naming profile ──
+  const styleMap={},subjects=new Map();
+  const subjStyle=id=>{if(!styleMap[id]){let st=P.subjStyle;if(st==='mixed')st=wpick([['short',5],['off',3],['long',3]]);styleMap[id]=st}return styleMap[id]};
+  const regSubject=(display,full,color)=>{if(!subjects.has(display))subjects.set(display,{display,full:full||'',color:color===undefined?16777215:color});return display};
+  const altDisp={};
+  const disp=(id,stage)=>{const s=SUBJ[id];if(altDisp[id]&&altDisp[id].stage===stage)return regSubject(altDisp[id].name,'',16777215);
+    const st=subjStyle(id);const name=st==='long'?s.long:st==='off'?s.off:s.short;
+    return regSubject(name,P.fullText&&st!=='long'&&chance(.85)?s.long:'',P.colors&&chance(.5)?pk(PALETTE):16777215)};
+  // ── Classes ──
+  const[yA,yB]=P.yr.split('-');const y0=yA==='F'?0:+yA,y1=+yB,cy=+P.cy;
+  const classLabel=(y,i)=>{let l=P.letters==='num'?String(i+1):'ABCDEFGH'[i];if(P.letters==='lower')l=l.toLowerCase();return prefix+(y===0?'F':y)+l};
+  const classes=[];for(let y=y0;y<=y1;y++)for(let i=0;i<cy;i++)classes.push({id:`${y}${i}`,year:y,idx:i,stage:stageOf(y),name:classLabel(y,i),mentors:[],home:null,sva:false,co:false});
+  const byYear={};classes.forEach(c=>(byYear[c.year]=byYear[c.year]||[]).push(c));
+  const stages=new Set(classes.map(c=>c.stage));
+  const groups=new Map();const regGroup=(name,o={})=>{if(!groups.has(name))groups.set(name,Object.assign({name,isClass:false,iclass:[],teachers:[]},o));return groups.get(name)};
+  classes.forEach(c=>regGroup(c.name,{isClass:true}));
+  const gsep=P.groupSep,ssep=P.svaSep;
+  const subg=(c,s,sep=gsep)=>regGroup(c.name+sep+s,{iclass:[c.name]}).name;
+  if(P.sva){const n=Math.max(1,Math.round(classes.filter(c=>c.year>0).length*P.svaPct/100));sh(classes.filter(c=>c.year>0)).slice(0,n).forEach(c=>c.sva=true)}
+  if(+P.coClassPct>0){const n=Math.round(classes.length*P.coClassPct/100);sh(classes).slice(0,n).forEach(c=>c.co=true)}
+  L(`Klasser: ${classes.length} (${[...stages].join('/')}) · Sv/Sva i ${classes.filter(c=>c.sva).length} · samundervisning i ${classes.filter(c=>c.co).length}`);
+  // ── Tjänstefördelning (TA) ──
+  const ta=[];let blockSeq=0;const nb=()=>'B'+(++blockSeq);
+  const addTA=o=>{const r=Object.assign({pk:ta.length+1,teachers:[],period:'',week:'',notPeriod:'',notWeek:'',block:'',cls:[],kind:'lesson',slot:''},o);ta.push(r);return r};
+  const dev=M=>r5(M*(1+(dq>=1?(rn()-.5)*(dq>=2?.2:.1):0)));
+  const hkkYear={mel:pk([5,6,6]),hog:pk([8,8,9])},slLagYear=3;
+  classes.forEach(c=>{const st=c.stage,y=c.year,cl=[c.id];
+    if(st==='fsk'){addTA({subj:'fsk',group:c.name,cls:cl,M:900});addTA({subj:'idh',group:c.name,cls:cl,M:60});addTA({subj:'mu',group:c.name,cls:cl,M:40});return}
+    const tp=id=>SUBJ[id].tp?SUBJ[id].tp[st]:0;
+    // Svenska / Sva
+    if(c.sva){const b=nb(),M=dev(tp('sv'));addTA({subj:'sv',group:subg(c,'Sv',ssep),cls:cl,M,block:b});addTA({subj:'sva',group:subg(c,'Sva',ssep),cls:cl,M,block:b})}
+    else addTA({subj:'sv',group:c.name,cls:cl,M:dev(tp('sv'))});
+    addTA({subj:'ma',group:c.name,cls:cl,M:dev(tp('ma'))});
+    const enM=st==='lag'?[0,50,55][y-1]:tp('en');if(enM)addTA({subj:'en',group:c.name,cls:cl,M:dev(enM)});
+    addTA({subj:'idh',group:c.name,cls:cl,M:dev(tp('idh'))});addTA({subj:'mu',group:c.name,cls:cl,M:dev(tp('mu'))});
+    const blM=tp('bl');if(blM<40&&P.perUV)addTA({subj:'bl',group:c.name,cls:cl,M:blM*2,period:c.idx%2?'UV':'JV'});else addTA({subj:'bl',group:c.name,cls:cl,M:dev(Math.max(40,blM))});
+    // NO / SO
+    if(st==='hog'&&P.noSplit){const M=r5(tp('no')/3);['bi','fy','ke'].forEach(s=>addTA({subj:s,group:c.name,cls:cl,M:dev(M)}))}else addTA({subj:'no',group:c.name,cls:cl,M:dev(tp('no')+(st==='lag'?tp('tk'):0))});
+    if(st==='hog'&&P.soSplit){const M=r5(tp('so')/4);['hi','ge','re','sh'].forEach(s=>addTA({subj:s,group:c.name,cls:cl,M:dev(M)}))}else addTA({subj:'so',group:c.name,cls:cl,M:dev(tp('so'))});
+    // Hkk + Tk (halvklass rotation in the hkk year), otherwise plain Tk
+    const isHkkYear=y===hkkYear[st];
+    if(isHkkYear&&P.hkkRot){const b=nb(),M=st==='mel'?80:100;
+      addTA({subj:'hkk',group:subg(c,'1'),cls:cl,M,block:b,period:'HT',slot:'rot'});addTA({subj:'tk',group:subg(c,'2'),cls:cl,M,block:b,period:'HT',slot:'rot'});
+      addTA({subj:'hkk',group:subg(c,'2'),cls:cl,M,block:b,period:'VT',slot:'rot'});addTA({subj:'tk',group:subg(c,'1'),cls:cl,M,block:b,period:'VT',slot:'rot'})}
+    else if(isHkkYear){const M=st==='mel'?80:100;addTA({subj:'hkk',group:subg(c,'1'),cls:cl,M});addTA({subj:'hkk',group:subg(c,'2'),cls:cl,M});addTA({subj:'tk',group:c.name,cls:cl,M:dev(Math.max(40,tp('tk')))})}
+    else if(st!=='lag'){const tkM=tp('tk');if(tkM<45&&P.perUV)addTA({subj:'tk',group:c.name,cls:cl,M:tkM*2,period:c.idx%2?'JV':'UV'});else addTA({subj:'tk',group:c.name,cls:cl,M:dev(Math.max(40,tkM))})}
+    // Slöjd
+    const slM=st==='lag'?(y===slLagYear?90:0):tp('sl');
+    if(slM){if(P.slRot){const b=nb();addTA({subj:'sltr',group:subg(c,'SltrHT'),cls:cl,M:slM,block:b,period:'HT',slot:'rot'});addTA({subj:'sltx',group:subg(c,'SltxHT'),cls:cl,M:slM,block:b,period:'HT',slot:'rot'});
+        addTA({subj:'sltr',group:subg(c,'SltrVT'),cls:cl,M:slM,block:b,period:'VT',slot:'rot'});addTA({subj:'sltx',group:subg(c,'SltxVT'),cls:cl,M:slM,block:b,period:'VT',slot:'rot'})}
+      else addTA({subj:'sl',group:c.name,cls:cl,M:slM})}
+  });
+  // Språkval per year ≥ 6 — one block per year, cross-class groups
+  const langsAvail=['sp','fr','ty'].slice(0,clamp(+P.langs,1,3));
+  if(P.sprak)Object.entries(byYear).filter(([y])=>+y>=6).forEach(([y,cls])=>{const st=cls[0].stage,b=nb(),M=st==='mel'?80:dev(155);
+    const n=Math.max(2,Math.round(cls.length*1.3));const order=[];for(let i=0;i<n;i++)order.push(langsAvail[i%langsAvail.length]);
+    if(cls.length>=2||chance(.4))order.push('asv');const cnt={};
+    order.forEach(code=>{cnt[code]=(cnt[code]||0)+1;const idx=cnt[code];const tot=order.filter(x=>x===code).length;
+      const codeN=SUBJ[code].short.replace('/','');
+      let gname=P.sprakStyle==='mod'?`${prefix}${y}ModSp${codeN}`:`${prefix}${y}${codeN}`;if(tot>1)gname+=idx;
+      regGroup(gname,{iclass:P.iclassCross==='list'?cls.map(c=>c.name):[]});
+      addTA({subj:code,group:gname,cls:cls.map(c=>c.id),M,block:b,sprak:true,year:+y})})});
+  // Modersmål — cross-year small groups, no class booking
+  const mlLangs=P.modersmal?sh(ML_LANGS).slice(0,clamp(Math.round(classes.length/4),2,8)):[];
+  const spans=[];if(stages.has('fsk')||stages.has('lag'))spans.push([0,3]);if(stages.has('mel'))spans.push([4,6]);if(stages.has('hog'))spans.push([7,9]);
+  mlLangs.forEach(([name,code])=>{spans.forEach(([a,b])=>{if(!chance(.75))return;const ysp=`${Math.max(a,y0)}-${Math.min(b,y1)}`;const g=regGroup(`${code} ${ysp}`,{iclass:[]}).name;
+    const st=subjStyle('ml');const dname=st==='off'?`ML${code}`:st==='long'?`Modersmål ${name.toLowerCase()}`:`ML ${name}`;regSubject(dname,P.fullText?name:'',16777215);
+    addTA({subj:'ml',group:g,cls:[],M:60,kind:'ml',dname,lang:code})})});
+  L(`Tjänstefördelning: ${ta.length} rader (${blockSeq} block)`);
+  // ── Demand per stage & comp group (rotation rows share one slot) ──
+  const slotKey=r=>r.block&&r.slot==='rot'?`${r.block}|${r.subj}`:String(r.pk);
+  const demand={};const seenSlot=new Set();
+  ta.forEach(r=>{if(r.kind==='ml')return;const k=slotKey(r);if(seenSlot.has(k))return;seenSlot.add(k);const st=classes.find(c=>c.id===r.cls[0]).stage;const g=(PRIMARY[st==='fsk'?'lag':st]||{})[r.subj]||'core';demand[st]=demand[st]||{};demand[st][g]=(demand[st][g]||0)+r.M});
+  // ── Staff ──
+  const staff=[],used=new Set();const vocab=ROLE_VOCAB[P.roleVocab]||ROLE_VOCAB.en;
+  const effCap=Math.round(+P.cap*100/+P.staffPct);
+  function person(role,o={}){const female=chance(.62),first=pk(female?FN_F:FN_M),last=chance(.06)?pk(LN)+'-'+pk(LN):pk(LN);
+    const sig=makeSig(first,last,P.sigStyle,used);const isT=role==='teacher';
+    const ct=isT||role==='resurs'||role==='ml'?wpick([[100,100-+P.pt],[80,+P.pt*.4],[75,+P.pt*.2],[60,+P.pt*.2],[50,+P.pt*.2]]):100;
+    let days=new Set([0,1,2,3,4]);if(ct<=80){const off=sh([0,2,4,1,3]).slice(0,ct>=75?1:ct>=60?2:ri(2,3));off.forEach(d=>days.delete(d))}
+    const t=Object.assign({sig,first,last,role,roleLabel:vocab[role]||'',ct,cap:Math.round(effCap*ct/100),load:0,days,stages:new Set(),comps:[],mentorOf:[],home:null,site:null,leave:false,quitWeek:null,taught:new Set(),email:''},o);
+    t.email=P.nameMode==='token'?`${sig.toLowerCase()}@${domain}`:`${ascii(first).toLowerCase()}.${ascii(last).toLowerCase()}@${domain}`;
+    if(dq>=2&&chance(.08))t.email=t.email.replace(/^[^@]+/,m=>m.replace(/a/,'å'));
+    staff.push(t);return t}
+  const mkT=(stageSet,comps,o)=>person('teacher',Object.assign({stages:new Set(stageSet),comps:[...comps]},o));
+  const lagLike=['fsk','lag'];
+  // mentors (klasslärare) for F–6: pairs of classes share two teachers when mentors=2
+  ['fsk','lag','mel'].forEach(st=>{Object.values(byYear).forEach(cls=>{const sc=cls.filter(c=>c.stage===st);if(!sc.length)return;
+    const core=COMP[st==='fsk'?'fsk':st][0][1];const sts=st==='fsk'?['fsk']:st==='lag'?lagLike:['mel'];
+    if(+P.mentors===2){for(let i=0;i<sc.length;i+=2){const pair=sc.slice(i,i+2);const a=mkT(sts,core,{mentorOf:pair.map(c=>c.name),pref:['sv','so','en','bl','fsk']}),b=mkT(sts,core,{mentorOf:pair.map(c=>c.name),pref:['ma','no','tk','mu','fsk']});pair.forEach(c=>c.mentors.push(a.sig,b.sig))}}
+    else sc.forEach(c=>{const a=mkT(sts,core,{mentorOf:[c.name]});c.mentors.push(a.sig)})})});
+  // demand-based specialists per stage
+  Object.entries(demand).forEach(([st,groupsD])=>{const stKey=st==='fsk'?'lag':st;
+    Object.entries(groupsD).forEach(([g,M])=>{const comps=(COMP[stKey].find(x=>x[0]===g)||COMP[stKey][0])[1];
+      const have=staff.filter(t=>t.role==='teacher'&&t.stages.has(st)&&comps.every(c=>t.comps.includes(c))).reduce((s,t)=>s+t.cap/Math.max(1,[...t.stages].filter(x=>x!=='fsk').length),0);
+      let need=Math.max(0,Math.ceil((M-have*0.95)/(effCap*0.85)));if(have===0)need=Math.max(1,need);
+      for(let i=0;i<need;i++){const both=stages.size>1&&chance(+P.both/100);const sts=both?[...stages].filter(s=>s!=='fsk'):st==='lag'?lagLike:[st];mkT(sts,comps)}})});
+  // a språkval block needs one language teacher per group at the same time
+  ['mel','hog'].forEach(st=>{const blocksOf=ta.filter(r=>r.sprak&&classes.find(c=>c.id===r.cls[0]).stage===st&&r.subj!=='asv');if(!blocksOf.length)return;
+    const cnt={};blocksOf.forEach(r=>cnt[r.block]=(cnt[r.block]||0)+1);const needN=Math.max(...Object.values(cnt));
+    let have=staff.filter(t=>t.role==='teacher'&&t.stages.has(st)&&t.comps.includes('sp')).length;
+    const comps=(COMP[st].find(x=>x[0]==='lang'||x[0]==='enlang'))[1];while(have<needN){mkT([st],comps);have++}});
+  // leave, turnover, admin, spec, resurs, ML, fritids
+  const teachers=()=>staff.filter(t=>t.role==='teacher');
+  sh(teachers()).slice(0,+P.lv).forEach(t=>{t.leave=true;t.cap=0;mkT([...t.stages],t.comps,{vikarie:true})});
+  const quitters=sh(teachers().filter(t=>!t.leave)).slice(0,+P.turnover);
+  quitters.forEach(t=>{const htw=per.HT.weeks;t.quitWeek=pk(htw.slice(4,htw.length-2));t.replacement=mkT([...t.stages],t.comps,{startsAfter:t.quitWeek})});
+  const ADMIN=['Rektor','Biträdande rektor','Kurator','Skolsköterska','Studie- och yrkesvägledare','Administratör','IT-pedagog','Skolpsykolog'];
+  for(let i=0;i<+P.ad;i++)person('admin',{title:ADMIN[i%ADMIN.length]});
+  for(let i=0;i<+P.sp;i++)person('spec',{title:chance(.5)?'Specialpedagog':'Speciallärare',stages:new Set([...stages])});
+  const resurs=[];for(let i=0;i<+P.rs;i++){const r=person('resurs',{title:chance(.5)?'Resurspedagog':'Elevassistent'});r.classes=sh(classes).slice(0,ri(1,2)).map(c=>c.id);resurs.push(r)}
+  const mlT=[];if(mlLangs.length){const n=clamp(Math.ceil(mlLangs.length/2),1,+P.ml||1);for(let i=0;i<n;i++)mlT.push(person('ml',{title:'Modersmålslärare',langs:[]}))
+    mlLangs.forEach(([,code],i)=>mlT[i%mlT.length].langs.push(code))}
+  const fritids=[];if(P.fritids&&(stages.has('fsk')||stages.has('lag'))){const n=Math.max(1,Math.round(classes.filter(c=>c.year<=3).length*0.6));for(let i=0;i<n;i++)fritids.push(person('fritids',{title:'Fritidspedagog'}))}
+  // sites (multi-unit staff)
+  const sites=[];for(let i=0;i<+P.sites-1;i++)sites.push(fictionalPlace());
+  if(sites.length)sh(teachers().concat(mlT)).slice(0,Math.ceil(teachers().length*0.12)).forEach(t=>t.site=pk(sites));
+  mlT.forEach(t=>{if(sites.length&&chance(.7))t.site=pk(sites)});
+  L(`Personal: ${staff.length} — ${teachers().length} lärare (${teachers().filter(t=>t.leave).length} lediga, ${quitters.length} slutar under året), ${+P.ad} admin, ${+P.sp} spec, ${resurs.length} resurs, ${mlT.length} modersmål, ${fritids.length} fritids`);
+  // ── Assign teachers to TA rows ──
+  const slotT={};
+  const pickT=(row,st,exclude=new Set(),noCreate=false)=>{let c=teachers().filter(t=>!t.leave&&!t.startsAfter&&t.comps.includes(row.subj)&&t.stages.has(st)&&!exclude.has(t.sig));
+    if(!c.length)c=teachers().filter(t=>!t.leave&&!t.startsAfter&&t.comps.includes(row.subj)&&!exclude.has(t.sig));
+    if(!c.length&&noCreate)return null;
+    if(!c.length){const stKey=st==='fsk'?'lag':st;const g=PRIMARY[stKey][row.subj]||'core';const comps=(COMP[stKey].find(x=>x[0]===g)||COMP[stKey][0])[1];c=[mkT(st==='lag'?lagLike:[st],comps)];L(`Extra lärare skapad för ${row.subj} (${st})`,'wr')}
+    const cls=row.cls.map(id=>classes.find(x=>x.id===id));
+    const score=t=>{let s=t.load/Math.max(1,t.cap);if(t.load>t.cap)s+=1.5;if(t.load+row.M>t.cap)s+=.6;if(cls.some(c=>t.mentorOf.includes(c.name)))s-=(t.pref&&t.pref.includes(row.subj))?.8:.5;if(cls.some(c=>t.taught.has(c.id)))s-=.15;return s+rn()*.08};
+    return c.reduce((a,b)=>score(a)<score(b)?a:b)};
+  const blockUsed={};
+  ta.forEach(r=>{if(r.kind==='ml'){const t=mlT.find(t=>t.langs.includes(r.lang))||mlT[0]||person('ml',{title:'Modersmålslärare',langs:[r.lang]});r.teachers=[t.sig];t.load+=r.M;return}
+    const st=classes.find(c=>c.id===r.cls[0]).stage;const key=slotKey(r);
+    let t=slotT[key];if(!t){const bu=r.block?(blockUsed[r.block]=blockUsed[r.block]||[]):[];const ex=new Set(bu.filter(x=>r.slot!=='rot'||x.subj!==r.subj).map(x=>x.sig));t=pickT(r,st,ex);slotT[key]=t;t.load+=r.M;if(r.block)bu.push({subj:r.subj,sig:t.sig})}
+    r.teachers=[t.sig];r.cls.forEach(id=>t.taught.add(id));
+    // co-teaching: second teacher on core rows of flagged classes
+    const cl0=classes.find(c=>c.id===r.cls[0]);
+    if(cl0&&cl0.co&&CORE_SET.has(r.subj)&&!r.sprak&&chance(+P.coPct/100)){const ex=new Set([t.sig,...teachers().filter(x=>[...t.days].some(d=>!x.days.has(d))).map(x=>x.sig)]);const t2=pickT(r,st,ex,true);if(t2&&t2.load+r.M<=t2.cap*1.15){r.teachers.push(t2.sig);t2.load+=r.M;t2.taught.add(cl0.id)}}});
+  // språkval groups named by teacher signature
+  if(P.sprakStyle==='sig')ta.filter(r=>r.sprak).forEach(r=>{const old=groups.get(r.group);const nn=`${prefix}${r.year}${SUBJ[r.subj].short.replace('/','')}${r.teachers[0]}`;groups.delete(old.name);old.name=nn;groups.set(nn,old);r.group=nn});
+  // hög mentors = the two teachers with most minutes in the class
+  classes.filter(c=>c.stage==='hog').forEach(c=>{const m={};ta.filter(r=>r.cls.includes(c.id)&&!r.sprak).forEach(r=>r.teachers.forEach(s=>m[s]=(m[s]||0)+r.M*(CORE_SET.has(r.subj)?1.3:1)));
+    c.mentors=Object.entries(m).sort((a,b)=>b[1]-a[1]).slice(0,+P.mentors).map(([s])=>s);c.mentors.forEach(s=>staff.find(t=>t.sig===s).mentorOf.push(c.name))});
+  classes.forEach(c=>groups.get(c.name).teachers=[...c.mentors]);
+  // turnover: split rows into two week ranges
+  quitters.forEach(t=>{const q=t.quitWeek;const isB=w=>{const i=cal.weeks.indexOf(w);return i>=0&&cal.segs[i].ht&&w<=q};
+    ta.filter(r=>r.teachers.includes(t.sig)).forEach(r=>{const base=r.period&&per[r.period]?per[r.period].weeks:cal.weeks;const bw=base.filter(isB),aw=base.filter(w=>!isB(w));const rep=r.teachers.map(s=>s===t.sig?t.replacement.sig:s);
+      if(!bw.length){r.teachers=rep;return}if(!aw.length)return;
+      if(!r.block)r.block=nb();r.week=compressWeeks(bw);r.period='';const r2=addTA(Object.assign({},r,{pk:ta.length+1,teachers:rep,week:compressWeeks(aw),twin:r.pk}));r.twin=r2.pk})});
+  const over=teachers().filter(t=>t.cap&&t.load>t.cap*1.1);if(over.length)L(`${over.length} lärare över kapacitet: ${over.slice(0,6).map(t=>`${t.sig} ${Math.round(t.load/60*10)/10}h/${Math.round(t.cap/60*10)/10}h`).join(', ')}`,'wr');
+  // duplicate-code subjects (two codes for one thing, used by different stages)
+  if(dq>=1&&stages.size>1){const cands=['idh','bl','sl','sltr','mu'].filter(id=>ta.some(r=>r.subj===id));sh(cands).slice(0,dq).forEach(id=>{const st=subjStyle(id);const alt=st==='short'?(id==='idh'?'Idrott':id==='bl'?'Bild':id==='mu'?'Musik':SUBJ[id].long):SUBJ[id].short;altDisp[id]={name:alt,stage:pk([...stages].filter(s=>s!=='fsk'))}})}
+  // ── Rooms (generic count and specialist rooms scale with demand) ──
+  const rooms=[],roomType={},spRm={gym:[],musik:[],bild:[],sltr:[],sltx:[],hkk:[],no:[]};
+  const genericN=+P.rooms>0?+P.rooms:Math.ceil(classes.length*1.15)+2;const generic=[];
+  const BLD=[['Norra','Södra'],['Östra','Västra'],['Gula huset','Röda huset'],['Hus A','Hus B'],['Huvudbyggnaden','Annexet']];
+  if(P.roomStyle==='sal')for(let i=1;i<=genericN;i++)generic.push(`Sal ${i}`);
+  else{const[a,b]=P.roomStyle==='code'?['A','B']:pk(BLD);const half=Math.ceil(genericN/2);const j=P.roomStyle==='code'?'':' ';for(let i=1;i<=half;i++)generic.push(`${a}${j}${100+i}`);for(let i=1;i<=genericN-half;i++)generic.push(`${b}${j}${200+i}`)}
+  generic.forEach(r=>{rooms.push(r);roomType[r]='generic'});
+  const spDem={},seenSp=new Set();ta.forEach(r=>{const rt=SUBJ[r.subj].rm;if(!rt)return;const k=slotKey(r);if(seenSp.has(k))return;seenSp.add(k);spDem[rt]=(spDem[rt]||0)+r.M});
+  const SPN={gym:['Idrottshall','Idrottshall B','Gymnastiksal'],musik:['Musiksal','Musiksal 2'],bild:['Bildsal','Bildsal 2'],sltr:['Slöjdsal trä','Träslöjd 2'],sltx:['Slöjdsal textil','Textilslöjd 2'],hkk:[chance(.5)?'Hemkunskapssal':'HKK-sal','HKK-sal 2'],no:['NO-sal 1','NO-sal 2','Kemisal','Fysiksal']};
+  Object.entries(SPN).forEach(([k,names])=>{const dem=spDem[k]||0;if(!dem)return;const need=Math.max(1,Math.ceil(dem/1300));for(let i=0;i<need;i++){const n=names[i]||`${names[0]} ${i+1}`;rooms.push(n);roomType[n]=k;spRm[k].push(n)}});
+  const grupprum=[];const gN=+P.grp>0?+P.grp:Math.max(2,Math.ceil(classes.length/5));for(let i=1;i<=gN;i++){const n=`Grupprum ${i}`;grupprum.push(n);rooms.push(n);roomType[n]='grp'}
+  ['Bibliotek','Aula','Matsal'].forEach(n=>{rooms.push(n);roomType[n]='other'});
+  if(fritids.length){rooms.push('Fritids');roomType['Fritids']='other'}
+  const genPool=sh(generic);classes.filter(c=>c.stage!=='hog').forEach(c=>{c.home=genPool.length?genPool.shift():null});
+  sh(teachers().filter(t=>t.stages.has('hog')&&!t.leave)).forEach(t=>{if(genPool.length&&chance(.8))t.home=genPool.shift()});
+  L(`Salar: ${rooms.length} (${generic.length} klassrum, ${Object.values(spRm).flat().length} specialsalar, ${grupprum.length} grupprum)`);
+  // ── Trackers & windows ──
+  function Tracker(){const d={};return{book(id,day,s,e){const k=id+'|'+day;(d[k]=d[k]||[]).push({s,e})},free(id,day,s,e){return!(d[id+'|'+day]||[]).some(x=>s<x.e&&e>x.s)},mins(id,day){let t=0;(d[id+'|'+day]||[]).forEach(x=>t+=x.e-x.s);return t},list(id,day){return d[id+'|'+day]||[]}}}
+  const cS=Tracker(),tS=Tracker(),rS=Tracker();
+  const dayEnd=st=>st==='hog'?+P.e9:st==='mel'?+P.e6:+P.e3;
+  const lunW={},rastW={};
+  classes.forEach(c=>{const st=c.stage,base=st==='hog'?700:st==='mel'?660:645,off=Math.min(60,c.idx*10+(c.year%3)*5);lunW[c.id]={s:base+off,e:base+off+ +P.lu};
+    const rb=(st==='hog'?595:565)+Math.min(20,c.idx*5);rastW[c.id]=+P.fmRast>0?{s:rb,e:rb+ +P.fmRast}:{s:-1,e:-1}});
+  const les=[];let lpk=1;
+  const addLes=o=>{const l=Object.assign({pk:lpk++,day:0,start:480,len:60,subject:'',teachers:[],group:'',room:'',period:'',week:'',weeks:allWeeks,cls:[],kind:'lesson'},o);les.push(l);return l};
+  const freeGap=(sig,day,len,from,to)=>{for(let t=from;t+len<=to;t+=5)if(tS.free(sig,day,t,t+len))return t;return null};
+  // ── Scheduler: needs come from TA blocks ──
+  const blocks={};ta.forEach(r=>{if(r.kind==='ml')return;const k=r.block||('S'+r.pk);(blocks[k]=blocks[k]||[]).push(r)});
+  const needs=[];
+  Object.entries(blocks).forEach(([k,rows])=>{const clsIds=[...new Set(rows.flatMap(r=>r.cls))],st=classes.find(c=>c.id===clsIds[0]).stage;const lens=splitMinutes(rows[0].M,SUBJ[rows[0].subj].len,dq,st);
+    const pri=rows[0].sprak?0:rows.some(r=>r.slot==='rot')?1:rows.some(r=>SUBJ[r.subj].rm)?2:rows.length>1?3:4;
+    lens.forEach((len,i)=>needs.push({rows,len,cls:clsIds,st,pri,idx:i,key:k,r:rn()}))});
+  needs.sort((a,b)=>a.pri-b.pri||b.cls.length-a.cls.length||b.len-a.len||a.r-b.r);
+  const dayCount={};classes.forEach(c=>dayCount[c.id]=[0,0,0,0,0]);const subjDay={};const pa=+P.pa;
+  let placed=0,failed=0;const failedRows=[];
+  function tryPlace(need,pa,len){
+    const cls=need.cls.map(id=>classes.find(c=>c.id===id)),st=need.st,end=dayEnd(st);
+    const tsigs=[...new Set(need.rows.flatMap(r=>r.teachers))],tObjs=tsigs.map(s=>staff.find(t=>t.sig===s));
+    const dayOrd=[0,1,2,3,4].sort((a,b)=>cls.reduce((s,c)=>s+dayCount[c.id][a],0)-cls.reduce((s,c)=>s+dayCount[c.id][b],0));
+    let best=null,bestSc=Infinity;const rz={day:0,win:0,cls:0,tch:0,room:0};
+    const roomKey=r=>r.slot==='rot'?`${r.block}|${r.subj}`:String(r.twin?Math.min(r.pk,r.twin):r.pk);
+    for(const day of dayOrd){
+      if(tObjs.some(t=>!t.days.has(day))){rz.day++;continue}
+      for(let t0=+P.ds;t0+len<=end;t0+=5){const t1=t0+len;let ok=true;
+        for(const c of cls){const lw=lunW[c.id],rw=rastW[c.id];if((t0<lw.e&&t1>lw.s)||(t0<rw.e&&t1>rw.s)){rz.win++;ok=false;break}if(!cS.free(c.id,day,t0-pa,t1+pa)){rz.cls++;ok=false;break}}
+        if(!ok)continue;
+        if(tObjs.some(t=>!tS.free(t.sig,day,t0,t1))){rz.tch++;continue}
+        const byKey={},rr=[];
+        for(const r of need.rows){const rk=roomKey(r);if(byKey[rk]){rr.push(byKey[rk]);continue}
+          let pool;const rt=SUBJ[r.subj].rm;
+          if(rt&&spRm[rt]&&spRm[rt].length)pool=spRm[rt];
+          else{const c0=classes.find(c=>c.id===r.cls[0]),tb=staff.find(t=>t.sig===r.teachers[0]);pool=[st==='hog'?(tb&&tb.home):c0.home,...sh(generic)].filter(Boolean)}
+          const takenR=new Set(Object.values(byKey));const pick=pool.find(x=>!takenR.has(x)&&rS.free(x,day,t0,t1));if(!pick){rz.room++;ok=false;break}byKey[rk]=pick;rr.push(pick)}
+        if(!ok)continue;
+        let sc=rn()*30;cls.forEach(c=>{sc+=dayCount[c.id][day]*2.5;need.rows.forEach(r=>{if(subjDay[`${c.id}|${day}|${r.subj}`])sc+=400});
+          // compact packing: reward lessons that butt up against existing ones (or the day start / lunch)
+          const iv=cS.list(c.id,day),lw=lunW[c.id];let prev=+P.ds-pa,next=end+pa;iv.forEach(x=>{if(x.e<=t0&&x.e>prev)prev=x.e;if(x.s>=t1&&x.s<next)next=x.s});
+          if(lw.e<=t0&&lw.e>prev)prev=lw.e;if(lw.s>=t1&&lw.s<next)next=lw.s;
+          const gapB=t0-prev-(prev===lw.e||prev===+P.ds-pa?0:pa),gapA=next-t1-(next===lw.s||next===end+pa?0:pa);
+          sc+=(gapB===0?-120:gapB<40?90:gapB*0.4)+(gapA===0?-60:gapA<40?90:0)});
+        tObjs.forEach(t=>sc+=tS.mins(t.sig,day)*0.4);
+        if(st!=='hog'&&t0>=780)sc+=120;if(need.rows[0].sprak&&t0<540)sc+=60;
+        if(sc<bestSc){bestSc=sc;best={day,t0,t1,rr}}}}
+    if(!best){need.rz=rz;return false}
+    const{day,t0,t1,rr}=best;
+    cls.forEach(c=>{cS.book(c.id,day,t0,t1);dayCount[c.id][day]+=len;need.rows.forEach(r=>subjDay[`${c.id}|${day}|${r.subj}`]=1)});
+    tObjs.forEach(t=>tS.book(t.sig,day,t0,t1));[...new Set(rr)].forEach(r=>rS.book(r,day,t0,t1));
+    need.rows.forEach((r,i)=>addLes({day,start:t0,len,subject:disp(r.subj,st),teachers:[...r.teachers],group:r.group,room:rr[i],period:r.period,week:r.week,weeks:weeksOf(r.period,r.week),cls:r.cls,ta:r.pk,subj:r.subj,st}));
+    return true;
+  }
+  const retry=[];
+  needs.forEach(need=>{if(tryPlace(need,pa,need.len))placed++;else retry.push(need)});
+  retry.forEach(need=>{let ok=false;const attempt=()=>{for(const len of [need.len,need.len-5,need.len-10,need.len-15]){if(len<40)break;if(tryPlace(need,Math.min(pa,5),len)||tryPlace(need,0,len))return true}return false};
+    ok=attempt();if(!ok&&need.rows.some(r=>r.teachers.length>1)){need.rows.forEach(r=>{if(r.teachers.length>1)r.teachers=[r.teachers[0]]});ok=attempt()}
+    if(ok)placed++;else{failed++;failedRows.push(Object.assign({},need.rows[0],{rz:need.rz,len:need.len,tsigs:[...new Set(need.rows.flatMap(r=>r.teachers))]}))}});
+  L(`Placerade lektionspass: ${placed}/${needs.length}${failed?` — ${failed} misslyckades (${[...new Set(failedRows.map(r=>r.subj))].join(', ')})`:''}`,failed>needs.length*.05?'er':failed?'wr':'ok');
+  // ── Modersmål: after school, no class booking ──
+  ta.filter(r=>r.kind==='ml').forEach(r=>{const t=staff.find(x=>x.sig===r.teachers[0]);const lens=splitMinutes(r.M,'ml',0);
+    for(const len of lens){let done=false;for(const day of sh([...t.days])){for(const win of[[780,990],[+P.ds,780]]){const s=freeGap(t.sig,day,len,win[0],win[1]);if(s===null)continue;
+        const rm=[...grupprum,...generic].find(x=>rS.free(x,day,s,s+len))||'';tS.book(t.sig,day,s,s+len);if(rm)rS.book(rm,day,s,s+len);
+        addLes({day,start:s,len,subject:r.dname,teachers:[t.sig],group:r.group,room:rm,cls:[],kind:'ml'});done=true;break}if(done)break}}});
+  // ── Resurs rows: parallel to the supported lesson ──
+  const guideName=pk(['Resurs','Resurs','Resurstid']),fmts=[S=>`Resurs ${S}`,S=>`${S} resurs`,S=>`${S} Resu`,S=>`${S}-resurs`,S=>`Resurs - ${S}`],mainFmt=pk(fmts);
+  const resName=(style,l,c)=>{const S=l.subject.split(/[ \/]/)[0];if(style==='guide')return regSubject(guideName,'',16777215);if(style==='subject')return regSubject(((dq>=1&&chance(.15))?pk(fmts):mainFmt)(S),'',16777215);return regSubject(`${c.name} Stöd ${S}`,'',16777215)};
+  let resCount=0;
+  resurs.forEach(r=>{const style=P.resStyle==='mixed'?pk(['guide','subject','perclass']):P.resStyle;r.resStyle=style;
+    for(let day=0;day<5;day++){if(!r.days.has(day))continue;
+      const cand=les.filter(l=>l.kind==='lesson'&&l.day===day&&l.cls.some(id=>r.classes.includes(id))).sort((a,b)=>(CORE_SET.has(a.subj)?0:1)-(CORE_SET.has(b.subj)?0:1)||a.start-b.start);
+      let n=0;for(const l of cand){if(n>=+P.resPerDay)break;if(!tS.free(r.sig,day,l.start,l.start+l.len))continue;const c=classes.find(x=>l.cls.includes(x.id)&&r.classes.includes(x.id));
+        tS.book(r.sig,day,l.start,l.start+l.len);addLes({day,start:l.start,len:l.len,subject:resName(style,l,c),teachers:[r.sig],group:style==='perclass'?c.name:'',room:l.room,period:l.period,week:l.week,weeks:l.weeks,cls:[],kind:'resurs',note:`${c.name} ${l.subject}`});n++;resCount++}
+      if(r.title==='Elevassistent'&&P.fritids&&fritids.length&&chance(.6)){const s=dayEnd('lag');if(tS.free(r.sig,day,s,990)){tS.book(r.sig,day,s,990);addLes({day,start:s,len:990-s,subject:regSubject('Fritids'),teachers:[r.sig],group:'',room:'Fritids',cls:[],kind:'fritids'})}}}});
+  // ── Specialpedagog / speciallärare ──
+  const specName=pk(['Spec. undervisning','Specialundervisning','Särskilt stöd']);let specCount=0;
+  staff.filter(t=>t.role==='spec').forEach(sp=>{for(let day=0;day<5;day++){const n=ri(2,4);for(let i=0;i<n;i++){const len=pk([40,45,60]),c=pk(classes.filter(x=>x.year>0)),S=pk(['Ma','Sv','En']);
+      const s=freeGap(sp.sig,day,len,+P.ds+30,Math.min(dayEnd(c.stage),840));if(s===null)continue;const rm=grupprum.find(x=>rS.free(x,day,s,s+len))||'';
+      let subject,group='';const style=P.specStyle;
+      if(style==='guide')subject=regSubject(specName);else if(style==='subject')subject=regSubject(`${sp.title==='Speciallärare'?'Speciallärare':'Stöd'} ${S}`);else if(style==='perclass'){subject=regSubject(`${c.name} Stöd ${S}`);group=c.name}else{subject=regSubject(specName);group=regGroup(`${c.name}${gsep}Stöd`,{iclass:[c.name]}).name}
+      tS.book(sp.sig,day,s,s+len);if(rm)rS.book(rm,day,s,s+len);addLes({day,start:s,len,subject,teachers:[sp.sig],group,room:rm,cls:[],kind:'spec'});specCount++}}});
+  // ── Fritids staff ──
+  fritids.forEach(f=>{for(let day=0;day<5;day++){if(!f.days.has(day))continue;const s=dayEnd('lag')-60;tS.book(f.sig,day,s,990);addLes({day,start:s,len:990-s,subject:regSubject('Fritids'),teachers:[f.sig],group:'',room:'Fritids',cls:[],kind:'fritids'})}});
+  if(fritids.length&&P.perP4){fritids.slice(0,4).forEach((f,i)=>{for(let day=0;day<5;day++){if(!f.days.has(day)||!tS.free(f.sig,day,390,480))continue;tS.book(f.sig,day,390,480);addLes({day,start:390,len:90,subject:regSubject('Fritids öppning'),teachers:[f.sig],group:'',room:'Fritids',cls:[],kind:'fritids',period:'P'+(i+1),weeks:weeksOf('P'+(i+1))})}})}
+  // ── Structural entries (every teacher-attached row is checked against the tracker) ──
+  const stage2end=[...stages].reduce((m,s)=>Math.max(m,dayEnd(s)),0);
+  if(P.le)classes.forEach(c=>{const lw=lunW[c.id];for(let day=0;day<5;day++)addLes({day,start:lw.s,len:lw.e-lw.s,subject:regSubject('Lunch'),teachers:[],group:c.name,room:P.roomStyle==='sal'||chance(.5)?'Matsal':'',cls:[c.id],kind:'lunch'})});
+  const workers=staff.filter(t=>!t.leave);
+  if(P.ar)workers.forEach(t=>{const full=t.ct>=100;for(let day=0;day<5;day++){if(!t.days.has(day))continue;const s=t.role==='fritids'?+P.ds+90:(+P.ds-pk([0,15,15,30]));const len=full?pk([480,480,495,510]):clamp(r5(480*Math.max(.7,t.ct/100)),300,510);
+      addLes({day,start:s,len,subject:regSubject('Arbetstid',P.fullText?'Reglerad arbetstid':'',8421504),teachers:[t.sig],group:'',room:'',cls:[],kind:'arbetstid'})}});
+  staff.filter(t=>t.leave).forEach(t=>{if(chance(.5))for(let day=0;day<5;day++)addLes({day,start:+P.ds,len:480,subject:regSubject('Ledig'),teachers:[t.sig],group:'',room:'',cls:[],kind:'ledig'})});
+  if(P.br)workers.filter(t=>t.role==='teacher').forEach(t=>{for(let day=0;day<5;day++){if(!t.days.has(day))continue;const len=pk([15,15,20,30]);const s=freeGap(t.sig,day,len,540,660);if(s===null)continue;tS.book(t.sig,day,s,s+len);addLes({day,start:s,len,subject:regSubject('Rast'),teachers:[t.sig],group:'',room:'',cls:[],kind:'rast'})}});
+  const planName=pk(['Planering','Planering','F-tid','Planeringstid']);
+  if(P.pl)workers.filter(t=>t.role==='teacher'||t.role==='spec').forEach(t=>{const n=t.ct>=100?2:1;let got=0;for(const day of sh([...t.days])){if(got>=n)break;const len=pk([60,60,90]);const s=freeGap(t.sig,day,len,+P.ds+30,990);if(s===null)continue;tS.book(t.sig,day,s,s+len);const rm=t.home&&rS.free(t.home,day,s,s+len)?t.home:'';if(rm)rS.book(rm,day,s,s+len);addLes({day,start:s,len,subject:regSubject(planName),teachers:[t.sig],group:'',room:rm,cls:[],kind:'plan'});got++}});
+  if(P.km){ // arbetslag per year, APT, EHT
+    const konfName=pk(['Konferens','Arbetslag','Arbetslagsmöte']);
+    Object.keys(byYear).forEach((y,i)=>{const day=i%5;const tch=[...new Set(ta.filter(r=>r.cls.some(id=>byYear[y].some(c=>c.id===id))).flatMap(r=>r.teachers))];const st=byYear[y][0].stage;const s=Math.max(dayEnd(st),st==='hog'?930:870);const len=pk([60,60,75,90]);
+      tch.forEach(sig=>{const t=staff.find(x=>x.sig===sig);if(!t.days.has(day))return;if(!tS.free(sig,day,s,s+len))return;tS.book(sig,day,s,s+len);addLes({day,start:s,len,subject:regSubject(konfName==='Konferens'?`Konferens åk ${y}`:`${konfName} ${y}`),teachers:[sig],group:'',room:'',cls:[],kind:'konf',period:P.perUV&&chance(.5)?(i%2?'UV':'JV'):'',weeks:''})})});
+    const aptDay=pk([0,1,2,3]),aptS=stage2end,aptW=compressWeeks(cal.weeks.filter((w,i)=>i%4===1));
+    workers.forEach(t=>{if(!t.days.has(aptDay))return;if(!tS.free(t.sig,aptDay,aptS,aptS+90))return;tS.book(t.sig,aptDay,aptS,aptS+90);addLes({day:aptDay,start:aptS,len:90,subject:regSubject('APT'),teachers:[t.sig],group:'',room:'Aula',cls:[],kind:'apt',period:P.perP4?'P2':'',week:P.perP4?'':aptW,weeks:P.perP4?weeksOf('P2'):aptW})});
+    const eht=staff.filter(t=>t.role==='spec'||(t.role==='admin'&&/Kurator|sköterska|Rektor|psykolog/.test(t.title||'')));const ed=ri(0,4),es=600;
+    eht.forEach(t=>{if(!tS.free(t.sig,ed,es,es+60))return;tS.book(t.sig,ed,es,es+60);addLes({day:ed,start:es,len:60,subject:regSubject('EHT',P.fullText?'Elevhälsoteam':''),teachers:[t.sig],group:'',room:'',cls:[],kind:'eht'})});
+  }
+  if(P.rv){let n=0;for(let day=0;day<5;day++){const wins=[[585,615,'Rastvakt'],[660,720,'Lunchvakt'],[720,765,'Lunchvakt'],[800,830,'Rastvakt']];wins.forEach(([a,b,nm])=>{const len=pk([15,20,30]);
+      sh(workers.filter(t=>t.role==='teacher'||t.role==='resurs')).slice(0,ri(2,4)).forEach(t=>{if(!t.days.has(day))return;const s=freeGap(t.sig,day,len,a,b);if(s===null)return;tS.book(t.sig,day,s,s+len);addLes({day,start:s,len,subject:regSubject(nm),teachers:[t.sig],group:'',room:'',cls:[],kind:'vakt'});n++})})}L(`Rastvakt/lunchvakt: ${n}`)}
+  if(P.mt){const mName=pk(['Mentorstid','Mentorstid','Klassråd','Mentorstid/Klassråd']);classes.filter(c=>c.year>0).forEach(c=>{const len=pk([20,30,40]);const ms=c.mentors.filter(s=>staff.find(t=>t.sig===s));
+      for(const day of sh([0,1,2,3,4])){let ok=false;for(let t0=+P.ds;t0+len<=dayEnd(c.stage);t0+=5){const t1=t0+len;const lw=lunW[c.id],rw=rastW[c.id];if((t0<lw.e&&t1>lw.s)||(t0<rw.e&&t1>rw.s)||!cS.free(c.id,day,t0-pa,t1+pa))continue;if(ms.some(s=>!tS.free(s,day,t0,t1)||!staff.find(t=>t.sig===s).days.has(day)))continue;
+          cS.book(c.id,day,t0,t1);ms.forEach(s=>tS.book(s,day,t0,t1));const rm=c.home&&rS.free(c.home,day,t0,t1)?c.home:'';if(rm)rS.book(rm,day,t0,t1);
+          addLes({day,start:t0,len,subject:regSubject(mName),teachers:ms,group:c.name,room:rm,cls:[c.id],kind:'mentor'});ok=true;break}if(ok)break}})}
+  if(P.tr)staff.filter(t=>t.site&&!t.leave).forEach(t=>{let got=0;for(const day of sh([...t.days])){if(got>=ri(1,2))break;const len=pk([120,150,180,240]);const s=chance(.5)?freeGap(t.sig,day,len,+P.ds,780):freeGap(t.sig,day,len,720,990);if(s===null)continue;tS.book(t.sig,day,s,s+len);addLes({day,start:s,len,subject:regSubject(t.site),teachers:[t.sig],group:'',room:'',cls:[],kind:'travel'});got++}});
+  // Vikarie signature on a few lessons (the substitute exists in the Teacher table)
+  if(dq>=1&&chance(.6)){const v=person('teacher',{stages:new Set([...stages]),comps:[],vik:true});v.sig=used.has('vik')?'Vik2':'Vik';used.add(v.sig.toLowerCase());v.first=P.nameMode==='token'?'Vik':'Vikarie';v.last=P.nameMode==='token'?'Vik':'';v.email='';
+    let want=ri(1,3);for(const l of sh(les.filter(l=>l.kind==='lesson'))){if(!want)break;if(!tS.free(v.sig,l.day,l.start,l.start+l.len))continue;tS.book(v.sig,l.day,l.start,l.start+l.len);l.teachers=[v.sig];want--}}
+  L(`Rader: ${les.length} — lektioner ${les.filter(l=>l.kind==='lesson').length}, resurs ${resCount}, spec ${specCount}, modersmål ${les.filter(l=>l.kind==='ml').length}`);
+  // ── Noise injection (data-quality levels) ──
+  const G_blockOf=l=>{const r=ta.find(x=>x.pk===l.ta);return r&&r.block};
+  let noise=0;const noiseTypes=[];const T=teachers().filter(t=>!t.leave&&!t.vik);
+  const teachLes=les.filter(l=>l.kind==='lesson'),randT=()=>pk(T).sig,randC=()=>pk(classes),randRoom=()=>pk(rooms);
+  const pct=[0,.03,.07,.12][dq],target=Math.round(teachLes.length*pct);const N=(k,c)=>{noise+=c;noiseTypes.push(`${c} ${k}`)};
+  const rstart=()=>r5(ri(+P.ds,+P.ds+300));
+  if(dq>=1){
+    const softRow=(len,o)=>{const t=randT(),day=ri(0,4);const s=freeGap(t,day,len,+P.ds,900);if(s===null)return false;tS.book(t,day,s,s+len);addLes(Object.assign({day,start:s,len,teachers:[t],group:'',room:'',cls:[],kind:'noise'},typeof o==='function'?o(t):o));return true};
+    let c=Math.max(1,Math.round(target*.25)),k=0;for(let i=0;i<c;i++)if(softRow(pk([40,50,60]),t=>({subject:regSubject(t),group:randC().name})))k++;N('lärarsignatur som ämne',k);
+    c=Math.max(1,Math.round(target*.2));k=0;for(let i=0;i<c;i++)if(softRow(pk([30,45,60]),{subject:''}))k++;N('tomt ämne',k);
+    c=Math.max(1,Math.round(target*.15));k=0;for(let i=0;i<c;i++)if(softRow(60,()=>({subject:regSubject('Lektion'),group:chance(.5)?randC().name:''})))k++;N('"Lektion" utan ämne',k);
+    const subs=[...groups.values()].filter(g=>!g.isClass&&g.iclass.length===1);c=Math.min(subs.length,ri(1,2));sh(subs).slice(0,c).forEach(g=>g.iclass=[]);N('grupp utan ingående klass',c);
+    pk([['Elevråd'],['Läxhjälp','Studiestöd efter skoltid'],['Temadag','Rastaktivitet'],['Facklig tid'],['Simning','Skolbibliotek']]).forEach(s=>regSubject(s));
+    const l=pk(teachLes.filter(x=>!G_blockOf(x)));if(l){const ws=parseWeeks(l.weeks).slice(2);l.week=compressWeeks(ws);l.weeks=l.week;l.period='';N('lektion med explicit veckolista',1)}
+  }
+  if(dq>=2){
+    let c=Math.max(1,Math.round(target*.1));for(let i=0;i<c;i++){const src=pk(teachLes.filter(l=>l.room));addLes({day:src.day,start:src.start,len:src.len,subject:src.subject,teachers:[randT()],group:randC().name,room:src.room,cls:[],kind:'noise'})}N('dubbelbokad sal',c);
+    c=Math.max(1,Math.round(target*.1));for(let i=0;i<c;i++){const src=pk(teachLes);addLes(Object.assign({},src,{pk:lpk++,subject:chance(.5)?src.subject.toLowerCase():src.subject+' ',cls:[],kind:'noise'}))}N('inkonsekvent ämnesnamn',c);
+    const t=pk(T);const ghost=person('teacher',{stages:new Set(),comps:[],archived:true});ghost.sig=t.sig;N('dubblerad lärarsignatur',1);
+    c=Math.max(1,Math.round(target*.05));for(let i=0;i<c;i++)addLes({day:ri(0,4),start:rstart(),len:60,subject:regSubject(pk(['Ma','Sv','En'])),teachers:[pk(['Xyz','Qwe','Zzq'])],group:randC().name,room:randRoom(),cls:[],kind:'noise'});N('okänd lärarsignatur',c);
+    sh(teachLes).slice(0,ri(1,3)).forEach(l=>l.group=l.group+' ');N('mellanslag i gruppnamn',1);
+  }
+  if(dq>=3){
+    let c=Math.max(1,Math.round(target*.08));for(let i=0;i<c;i++)addLes({day:ri(0,4),start:rstart(),len:pk([0,5,5]),subject:'',teachers:[randT()],group:'',room:'',cls:[],kind:'noise'});N('nollängd',c);
+    c=Math.max(1,Math.round(target*.05));for(let i=0;i<c;i++)addLes({day:ri(0,4),start:pk([390,405,990,1020]),len:60,subject:'',teachers:[randT()],group:'',room:'',cls:[],kind:'noise'});N('utanför skoldag',c);
+    addLes({day:ri(0,4),start:rstart(),len:60,subject:regSubject('Ma'),teachers:[randT()],group:randC().name,room:randRoom(),cls:[],kind:'noise',week:'25-33',weeks:'25-33'});
+    addLes({day:5,dayName:'Lördag',start:540,len:60,subject:regSubject('Studiedag'),teachers:[randT()],group:'',room:'',cls:[],kind:'noise'});N('veckor utanför läsår + helgdag',2);
+  }
+  if(noise)L(`Brus (nivå ${dq}): ${noise} rader — ${noiseTypes.join(', ')}`,'wr');
+  // ── Post-process: week lists, block names ──
+  les.forEach(l=>{if(!l.weeks)l.weeks=weeksOf(l.period,l.week)});
+  ta.forEach(r=>{if(!r.block||r.bname)return;const rows=ta.filter(x=>x.block===r.block);const cn=r.cls.length?classes.find(c=>c.id===r.cls[0]).name:'';
+    let n='';if(r.sprak)n=`Språkval ${r.year}`;else if(rows.some(x=>x.slot==='rot'))n=(r.subj==='sltr'||r.subj==='sltx')?`Slöjd ${cn}`:`Hkk/Tk ${cn}`;else if(rows.some(x=>x.subj==='sva'))n=`Sv/SvA ${cn}`;
+    rows.forEach(x=>x.bname=n)});
+  // ── Output ──
+  const sepT=P.teacherSep||',';
+  const weekCols=(period,week)=>{if(!period||!per[period])return[period,week];const mode=P.weeksMode==='mixed'?(chance(.3)?'explicit':'period'):P.weeksMode;return mode==='explicit'?['',weeksOf(period)]:[period,week]};
+  const taFlags=r=>P.taFlags==='blank'?['','']:[r.twin&&r.twin<r.pk?String(r.twin):'0','1'];
+  const tnames=t=>P.nameMode==='token'?[t.sig,t.sig]:[t.last,t.first];
+  const creation=isoD(addD(cal.start,ri(-20,Math.floor((cal.end-cal.start)/DAYMS*.7))));
+  function buildNova(){const O=[];
+    O.push('[Source]','Application=Novaschem','ApplicationID=1','ApplicationVerMajor=4','ApplicationVerMinor=0','DatabaseRevNo=640','CurrentNovaschemDatabase=','User=',`SchoolID=${schoolName}`,`School=${schoolName}`,`County=${kommun}`,'BaseYear=1994',`OffsetYear=${cal.Y-1994}`,'OffsetMonth=6',`CreationDate=${creation}`,'','[Destination]','Application=Textfil GR','ApplicationID=16','','[DatabaseOptions]','Update=TRUE','AddNew=TRUE','','[Tables]','');
+    O.push('Room (6600)','[Rows]','Room (6601)\tGUID (5800)\tCategory (6602)\tSeatingCapacity (6607)');rooms.forEach(r=>O.push(`${r}\t{${uid()}}\t\t`));O.push('');
+    O.push('Subject (6400)','[Rows]','Subject (6401)\tGUID (5800)\tCategory (6402)\tFullText (6403)\tBackgroundColor (6432)\tTextColor (6433)\tEvaluationNumber (6429)');
+    [...subjects.values()].sort((a,b)=>a.display.localeCompare(b.display,'sv')).forEach(s=>O.push(`${s.display}\t{${uid()}}\t\t${s.full}\t${s.color}\t0\t${s.display==='Arbetstid'?'0':''}`));O.push('');
+    O.push('Teacher (6000)','[Rows]','Teacher (6001)\tGUID (5800)\tCategory (6002)\t\tRole\t\tLastName (6003)\tTitle (6006)\tFirstName (6004)\tPhone (6033)\tEMail (6034)\t');
+    const RO={teacher:0,ml:1,spec:2,fritids:3,resurs:4,admin:5};[...staff].sort((a,b)=>(RO[a.role]-RO[b.role])||a.sig.localeCompare(b.sig,'sv')).forEach(t=>{const[ln,fn]=tnames(t);O.push(`${t.sig}\t{${uid()}}\t\t\t${t.roleLabel}\t\t${ln}\t${P.titles?(t.title||''):''}\t${fn}\t\t${t.email}\t`)});O.push('');
+    O.push('Group (6200)','[Rows]','Group (6201)\tGUID (5800)\tClass (6210)\tTeacher (6204)\tIClass (6206)\tStudent (6205)');
+    [...groups.values()].sort((a,b)=>a.name.localeCompare(b.name,'sv')).forEach(g=>O.push(`${g.name}\t{${uid()}}\t${g.isClass?1:0}\t${g.teachers.join(',')}\t${g.iclass.join(',')}\t`));O.push('');
+    O.push('PeriodGeneral (8100)','[Rows]','SchoolYear (8104)',cal.segs.map(s=>s.str).join(', '),'');
+    O.push('Period (8000)','[Rows]','Period (8001)\tGUID (5800)\tTextBelowSchedule (8002)\tCategory (8006)\tCalendar (8005)');
+    Object.entries(per).forEach(([k,p])=>O.push(`${k}\t{${uid()}}\t\t\t${p.cal}`));O.push('');
+    O.push('TA (8200)','[Rows]','PK (8200)\tGUID (5800)\tOriginalRecord (8224)\tCreateLesson (8227)\tCourse (8202)\tSubject (8209)\tTeacher (8210)\tGroup (8203)\tTotalHours (8204)\tWeektime (8208)\tBlockname (8215)\tPeriod (8206)\tWeek (8207)\tNotPeriod (8212)\tNotWeek (8213)');
+    ta.forEach(r=>{const wk=r.period&&per[r.period]?per[r.period].weeks.length:cal.weeks.length;const st=r.cls.length?classes.find(c=>c.id===r.cls[0]).stage:'';const dn=r.kind==='ml'?r.dname:disp(r.subj,st);
+      const[pe,we]=weekCols(r.period,r.week),[orig,cre]=taFlags(r);O.push(`${r.pk}\t{${uid()}}\t${orig}\t${cre}\t\t${dn}\t${r.teachers.join(sepT)}\t${r.group}\t${Math.round(r.M*wk/60)}\t${r.M}\t${r.bname||''}\t${pe}\t${we}\t\t`)});O.push('');
+    O.push('Lesson (7100)','[Rows]','PK (7100)\tGUID (5800)\tDayOfWeek (7101)\tStarttime (7102)\tLength (7115)\tCourse (7106)\tSubject (7103)\tTeacher (7104)\tGroup (7105)\tRoom (7107)\tPeriod (7108)\tWeek (7109)\tActualWeeks (7167)');
+    les.forEach(l=>{const[pe,we]=weekCols(l.period,l.week);O.push(`${l.pk}\t{${uid()}}\t${l.dayName||DAYS[l.day]}\t${hm(l.start)}\t${l.len}\t\t${l.subject}\t${l.teachers.join(sepT)}\t${l.group}\t${l.room}\t${pe}\t${we}\t${l.weeks}`)});
+    return O.join('\r\n')+'\r\n'}
+  function buildCSV(){const q=v=>{v=String(v);return/[",\r\n]/.test(v)?`"${v.replace(/"/g,'""')}"`:v};const O=['Day,StartTime,Length,Subject,Teacher,Group,Room,Period,Week,ActualWeeks'];
+    les.forEach(l=>{const[pe,we]=weekCols(l.period,l.week);O.push([l.dayName||DAYS[l.day],hm(l.start),l.len,l.subject,l.teachers.join(sepT),l.group,l.room,pe,we,l.weeks].map(q).join(','))});return O.join('\r\n')+'\r\n'}
+  const damageText=(s,style)=>{if(style==='space')return s.replace(/[åäöÅÄÖéÉüÜ]/g,' ');if(style==='question')return s.replace(/[åäöÅÄÖéÉüÜ]/g,'?');const map={'å':'Ã¥','ä':'Ã¤','ö':'Ã¶','Å':'Ã…','Ä':'Ã„','Ö':'Ã–','é':'Ã©','É':'Ã‰','ü':'Ã¼','Ü':'Ãœ'};return s.replace(/[åäöÅÄÖéÉüÜ]/g,c=>map[c])};
+  const clean=P.fm==='n'?buildNova():buildCSV();let text=clean,damage='';
+  if(dq>=3||(dq>=2&&chance(.3))){damage=pk(['space','mojibake','question']);text=damageText(text,damage);L(`Teckenkodning skadad i hela filen (${damage})`,'wr')}
+  const bytes=P.enc==='utf8'?encodeUTF8(text):encodeCP1252(text);
+  // ── Checks ──
+  const wset=l=>{const s=new Set();String(l.weeks||'').split(',').map(x=>x.trim()).filter(Boolean).forEach(x=>{const m=x.match(/^(\d+)-(\d+)$/);if(m){for(let w=+m[1];w<=+m[2];w++)s.add(w)}else if(/^\d+$/.test(x))s.add(+x)});return s};
+  const inter=(a,b)=>{for(const x of a)if(b.has(x))return true;return false},ov=(a,b)=>a.day===b.day&&a.start<b.start+b.len&&b.start<a.start+a.len;
+  const checks={teacher:0,class:0,room:0,examples:[]};
+  const byT={};les.forEach(l=>{if(l.kind==='arbetstid'||l.kind==='ledig')return;l.teachers.forEach(t=>{if(t)(byT[t]=byT[t]||[]).push(l)})});
+  for(const[t,ls]of Object.entries(byT))for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const a=ls[i],b=ls[j];if(ov(a,b)&&inter(wset(a),wset(b))){checks.teacher++;if(checks.examples.length<15)checks.examples.push(`lärare ${t}: ${DAYS[a.day]||a.dayName} ${hm(a.start)} ${a.subject||'(tomt)'} ↔ ${hm(b.start)} ${b.subject||'(tomt)'}`)}}
+  const byC={};les.forEach(l=>{if(!['lesson','lunch','mentor'].includes(l.kind))return;l.cls.forEach(id=>(byC[id]=byC[id]||[]).push(l))});
+  for(const[id,ls]of Object.entries(byC))for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const a=ls[i],b=ls[j];if(!ov(a,b)||!inter(wset(a),wset(b)))continue;
+    const ga=groups.get(a.group.trim()),gb=groups.get(b.group.trim()),sub=g=>g&&!g.isClass;if(sub(ga)&&sub(gb)&&a.group!==b.group)continue;
+    checks.class++;if(checks.examples.length<15)checks.examples.push(`klass ${a.group}: ${DAYS[a.day]} ${hm(a.start)} ${a.subject} ↔ ${hm(b.start)} ${b.subject}`)}
+  const byR={};les.forEach(l=>{if(!l.room||['resurs','arbetstid','lunch','apt','fritids'].includes(l.kind))return;(byR[l.room]=byR[l.room]||[]).push(l)});
+  for(const[r,ls]of Object.entries(byR))for(let i=0;i<ls.length;i++)for(let j=i+1;j<ls.length;j++){const a=ls[i],b=ls[j];if(ov(a,b)&&inter(wset(a),wset(b))){checks.room++;if(checks.examples.length<15)checks.examples.push(`sal ${r}: ${DAYS[a.day]} ${hm(a.start)} ${a.subject} ↔ ${hm(b.start)} ${b.subject}`)}}
+  const nConf=checks.teacher+checks.class+checks.room;
+  L(`Kontroll: lärarkonflikter ${checks.teacher}, klasskonflikter ${checks.class}, salskonflikter ${checks.room}`,dq===0&&nConf?'er':nConf?'wr':'ok');
+  // ── Stats ──
+  const tStats={};staff.forEach(t=>{const mine=les.filter(l=>l.teachers.includes(t.sig)&&['lesson','ml'].includes(l.kind));tStats[t.sig]={nm:`${t.first} ${t.last}`.trim(),role:t.role,title:t.title||'',ct:t.ct,hrs:Math.round(mine.reduce((s,l)=>s+l.len,0)/60*10)/10,lc:mine.length,comps:t.comps.join(','),stages:[...t.stages].join('/'),mentor:t.mentorOf.join(','),leave:t.leave,quit:t.quitWeek,site:t.site||'',home:t.home||'',archived:!!t.archived,vik:!!t.vik}});
+  const cStats={};classes.forEach(c=>{const mine=les.filter(l=>l.kind==='lesson'&&l.cls.includes(c.id));const slots=new Map();mine.forEach(l=>slots.set(l.day+'|'+l.start,l.len));cStats[c.name]={n:slots.size,mins:[...slots.values()].reduce((s,x)=>s+x,0),teachers:new Set(mine.flatMap(l=>l.teachers)).size,rooms:new Set(mine.map(l=>l.room)).size,mentors:c.mentors.join(','),sva:c.sva,co:c.co,home:c.home||''}});
+  const fname=`${ascii(schoolName).replace(/\s+/g,'_')}_${cal.label.replace('/','-')}.${P.fm==='n'?'TXT':'csv'}`;
+  return{P,failedRows,text,clean,bytes,fname,les,staff,classes,groups,subjects,rooms,roomType,cal,per,ta,tStats,cStats,checks,log,noise,placed,failed,schoolName,kommun,damage};
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 6. Parameters & UI (schema-driven so new knobs are one line each)
+// ═══════════════════════════════════════════════════════════════
+const DEF={nm:'',kommun:'',yr:'4-9',cy:3,letters:'upper',prefix:'',sd:42,autoSeed:true,
+  year:2026,startWeek:'34',startDow:'1',endWeek:'24',endDow:'5',region:'ost',paskBefore:false,studiedagar:4,perUV:true,perP4:false,weeksMode:'period',taFlags:'flags',
+  staffPct:100,cap:1080,mentors:2,pt:15,lv:1,turnover:1,both:10,ad:3,sp:2,rs:3,ml:2,
+  ds:480,e3:840,e6:870,e9:930,lu:30,pa:10,fmRast:0,rooms:0,grp:0,
+  sva:true,svaPct:40,slRot:true,hkkRot:true,noSplit:true,soSplit:true,sprak:true,langs:3,modersmal:true,sites:1,fritids:true,
+  sigStyle:'abc',subjStyle:'short',groupSep:':',svaSep:'-',sprakStyle:'yr',roomStyle:'sal',roleVocab:'en',nameMode:'real',titles:false,fullText:true,colors:true,iclassCross:'list',teacherSep:',',
+  resStyle:'guide',resPerDay:4,coClassPct:30,coPct:40,specStyle:'guide',
+  ar:true,br:true,pl:true,km:true,rv:true,mt:true,le:true,tr:true,
+  dq:1,enc:'cp1252',fm:'n',batch:1};
+const T_IDS=new Set(['ds','e3','e6','e9']);
+const UI=[
+ ['Skola',[{k:'nm',l:'Namn',t:'txt',ph:'(fiktivt, slumpas)'},{k:'kommun',l:'Kommun',t:'txt',ph:'(fiktiv, slumpas)'},{k:'yr',l:'Årskurser',t:'sel',o:['F-3','1-3','F-6','1-6','4-6','4-9','6-9','7-9','F-9','1-9']},{k:'cy',l:'Klasser/åk',t:'rng',min:1,max:6},{k:'letters',l:'Klassbeteckning',t:'sel',o:[['upper','4A'],['lower','4a'],['num','4:1-stil (41)']]},{k:'prefix',l:'Prefix',t:'txt',ph:'t.ex. Ek'},{k:'sd',l:'Seed',t:'rng',min:1,max:9999},{k:'autoSeed',l:'Ny seed vid varje körning',t:'chk'}]],
+ ['Läsår',[{k:'year',l:'Startår',t:'rng',min:2022,max:2030},{k:'startWeek',l:'Startvecka',t:'sel',o:['33','34','35']},{k:'startDow',l:'Startdag',t:'sel',o:[['1','Mån'],['2','Tis'],['3','Ons'],['4','Tor']]},{k:'endWeek',l:'Slutvecka',t:'sel',o:['23','24','25']},{k:'endDow',l:'Slutdag',t:'sel',o:[['4','Tor'],['5','Fre']]},{k:'region',l:'Sportlov',t:'sel',o:[['vast','v7'],['syd','v8'],['ost','v9'],['norr','v10']]},{k:'paskBefore',l:'Påsklov före påsk',t:'chk'},{k:'studiedagar',l:'Studiedagar',t:'rng',min:0,max:8},{k:'perUV',l:'Perioder UV/JV',t:'chk'},{k:'perP4',l:'Perioder P1–P4 (rullande)',t:'chk'},{k:'weeksMode',l:'Veckor på rader',t:'sel',o:[['period','Periodnamn (HT), Week tom'],['explicit','Explicit veckolista'],['mixed','Blandat per rad']]}]],
+ ['Personal',[{k:'staffPct',l:'Bemanning %',t:'rng',min:80,max:150,step:5},{k:'cap',l:'Undervisning min/v',t:'rng',min:900,max:1300,step:20},{k:'mentors',l:'Mentorer/klass',t:'sel',o:['1','2']},{k:'pt',l:'Deltid %',t:'rng',min:0,max:60},{k:'both',l:'Flerstadie %',t:'rng',min:0,max:50},{k:'lv',l:'Lediga',t:'rng',min:0,max:5},{k:'turnover',l:'Slutar under året',t:'rng',min:0,max:4},{k:'ad',l:'Admin/elevhälsa',t:'rng',min:0,max:8},{k:'sp',l:'Specialpedagoger',t:'rng',min:0,max:6},{k:'rs',l:'Resurs/assistenter',t:'rng',min:0,max:12},{k:'ml',l:'Modersmålslärare',t:'rng',min:1,max:6}]],
+ ['Skoldag & salar',[{k:'ds',l:'Start',t:'rng',min:450,max:540,step:5},{k:'e3',l:'Slut F–3',t:'rng',min:750,max:870,step:5},{k:'e6',l:'Slut 4–6',t:'rng',min:810,max:930,step:5},{k:'e9',l:'Slut 7–9',t:'rng',min:870,max:990,step:5},{k:'lu',l:'Lunch min',t:'rng',min:25,max:45,step:5},{k:'pa',l:'Rast mellan pass',t:'rng',min:0,max:15,step:5},{k:'fmRast',l:'Förmiddagsrast min',t:'rng',min:0,max:30,step:5},{k:'rooms',l:'Klassrum (0=auto)',t:'rng',min:0,max:60},{k:'grp',l:'Grupprum (0=auto)',t:'rng',min:0,max:12},{k:'roomStyle',l:'Salnamn',t:'sel',o:[['sal','Sal 1, Sal 2…'],['bldg','Byggnad + nr'],['code','A101, B201…']]}]],
+ ['Ämnen & grupper',[{k:'sva',l:'Sv/SvA-parallell',t:'chk'},{k:'svaPct',l:'  andel klasser %',t:'rng',min:10,max:100,step:10},{k:'slRot',l:'Slöjd halvklass HT/VT',t:'chk'},{k:'hkkRot',l:'Hkk/Tk halvklass HT/VT',t:'chk'},{k:'noSplit',l:'NO→Bi/Fy/Ke (7–9)',t:'chk'},{k:'soSplit',l:'SO→Hi/Ge/Re/Sh (7–9)',t:'chk'},{k:'sprak',l:'Språkval (åk 6+)',t:'chk'},{k:'langs',l:'  antal språk',t:'rng',min:1,max:3},{k:'modersmal',l:'Modersmål',t:'chk'},{k:'fritids',l:'Fritids (F–3)',t:'chk'},{k:'sites',l:'Skolenheter',t:'rng',min:1,max:4}]],
+ ['Namnprofiler',[{k:'sigStyle',l:'Signatur',t:'sel',o:[['abc','Abc'],['ABC','ABC'],['init','ESvensson'],['first','EvaS'],['mixed','Blandat']]},{k:'nameMode',l:'Lärartabell',t:'sel',o:[['real','För-/efternamn'],['token','Signatur som namn']]},{k:'subjStyle',l:'Ämneskoder',t:'sel',o:[['short','Ma, Sv, Idh'],['off','MA, SV, M2FRA'],['long','Matematik…'],['mixed','Blandat']]},{k:'groupSep',l:'Delgrupp',t:'sel',o:[[':','4A:1'],['-','4A-1'],['','4A1']]},{k:'svaSep',l:'Sv/SvA-grupp',t:'sel',o:[['-','4A-Sva'],[':','4A:Sva'],['','4ASva']]},{k:'sprakStyle',l:'Språkvalsgrupp',t:'sel',o:[['yr','7Fr'],['mod','7ModSpFr'],['sig','7FrAbc']]},{k:'iclassCross',l:'IClass årskursgrupp',t:'sel',o:[['list','7A,7B,7C'],['empty','tom']]},{k:'roleVocab',l:'Roll-kolumn',t:'sel',o:[['en','Admin / Student Assistant'],['sv','Svenska titlar'],['blank','Tom']]},{k:'teacherSep',l:'Flera lärare',t:'sel',o:[[',','Abc,Def'],[', ','Abc, Def']]},{k:'fullText',l:'FullText på ämnen',t:'chk'},{k:'colors',l:'Ämnesfärger',t:'chk'},{k:'titles',l:'Titlar i lärartabell',t:'chk'}]],
+ ['Resurs & samundervisning',[{k:'resStyle',l:'Resursstil',t:'sel',o:[['guide','Resurs, tom grupp'],['subject','Resurs Ma / Ma Resu'],['perclass','6A Stöd Ma'],['mixed','Blandat']]},{k:'resPerDay',l:'Resurspass/dag',t:'rng',min:1,max:8},{k:'specStyle',l:'Spec.ped-stil',t:'sel',o:[['guide','Spec. undervisning'],['subject','Speciallärare Ma'],['perclass','6A Stöd Ma'],['group','Grupp 6A:Stöd']]},{k:'coClassPct',l:'Tvålärarklasser %',t:'rng',min:0,max:100,step:10},{k:'coPct',l:'  andel pass %',t:'rng',min:0,max:100,step:10}]],
+ ['Övriga poster',[{k:'ar',l:'Arbetstid',t:'chk'},{k:'br',l:'Rast',t:'chk'},{k:'pl',l:'Planering',t:'chk'},{k:'km',l:'Konferens/APT/EHT',t:'chk'},{k:'rv',l:'Rastvakt/lunchvakt',t:'chk'},{k:'mt',l:'Mentorstid',t:'chk'},{k:'le',l:'Lunchrader',t:'chk'},{k:'tr',l:'Resor mellan enheter',t:'chk'}]],
+ ['Kvalitet & fil',[{k:'dq',l:'Datakvalitet',t:'sel',o:[['0','Perfekt'],['1','Realistisk'],['2','Stökig'],['3','Kaos']]},{k:'enc',l:'Teckenkodning',t:'sel',o:[['cp1252','ANSI (Windows-1252)'],['utf8','UTF-8']]},{k:'fm',l:'Format',t:'sel',o:[['n','Novaschem TXT'],['v','CSV']]},{k:'taFlags',l:'TA-flaggor',t:'sel',o:[['flags','OriginalRecord/CreateLesson ifyllda'],['blank','Tomma']]},{k:'batch',l:'Antal skolor (batch)',t:'rng',min:1,max:20}]]
+];
+function buildUI(){const host=document.getElementById('params');if(!host)return;host.innerHTML=UI.map(([title,fs])=>`<div class="p"><h3>${title}</h3>${fs.map(f=>{const id='p_'+f.k,v=DEF[f.k];
+  if(f.t==='rng')return`<div class="f"><label for="${id}">${f.l}</label><input type="range" id="${id}" min="${f.min}" max="${f.max}" step="${f.step||1}" value="${v}"><span class="v" id="o_${f.k}">${T_IDS.has(f.k)?hm(v):v}</span></div>`;
+  if(f.t==='sel')return`<div class="f"><label for="${id}">${f.l}</label><select id="${id}">${f.o.map(o=>{const[val,lab]=Array.isArray(o)?o:[o,o];return`<option value="${val}"${String(val)===String(v)?' selected':''}>${lab}</option>`}).join('')}</select></div>`;
+  if(f.t==='chk')return`<div class="tw"><label for="${id}">${f.l}</label><span class="sw"><input type="checkbox" id="${id}"${v?' checked':''}><span class="s"></span></span></div>`;
+  return`<div class="f"><label for="${id}">${f.l}</label><input type="text" id="${id}" value="${v}" placeholder="${f.ph||''}"></div>`}).join('')}</div>`).join('');
+  UI.forEach(([,fs])=>fs.forEach(f=>{if(f.t!=='rng')return;const s=document.getElementById('p_'+f.k),o=document.getElementById('o_'+f.k);s.addEventListener('input',()=>o.textContent=T_IDS.has(f.k)?hm(+s.value):s.value)}))}
+function collectParams(){const P={};Object.keys(DEF).forEach(k=>{const el=document.getElementById('p_'+k);if(!el){P[k]=DEF[k];return}P[k]=el.type==='checkbox'?el.checked:el.type==='range'?+el.value:el.value});return P}
+function rollSeed(){const s=document.getElementById('p_sd');if(!s)return;s.value=ri(1,9999);document.getElementById('o_sd').textContent=s.value}
+function rollNames(){seed(Date.now()%100000);document.getElementById('p_nm').value=fictionalSchool();document.getElementById('p_kommun').value=fictionalKommun()}
+let GEN=null,activeTab='preview';
+function runUI(){const P=collectParams();if(P.autoSeed){R=Math.random;rollSeed();P.sd=+document.getElementById('p_sd').value}
+  const t0=performance.now();GEN=generate(P);GEN.ms=Math.round(performance.now()-t0);render()}
+function render(){const G=GEN;if(!G)return;document.getElementById('mt').style.display='none';document.getElementById('rs').style.display='';document.getElementById('bD').disabled=false;
+  const teach=G.les.filter(l=>l.kind==='lesson'),tv=Object.values(G.tStats).filter(t=>t.role==='teacher'&&!t.leave&&!t.archived&&!t.vik);
+  const avg=tv.length?Math.round(tv.reduce((s,t)=>s+t.hrs,0)/tv.length*10)/10:0;const cv=Object.values(G.cStats);
+  const cards=[[G.les.length,'rader totalt'],[teach.length,'lektioner'],[G.ta.length,'TA-rader'],[tv.length,'lärare'],[G.classes.length,'klasser'],[G.groups.size,'grupper'],[G.rooms.length,'salar'],[avg+'h','snitt undervisning'],[Math.min(...cv.map(c=>c.teachers))+'–'+Math.max(...cv.map(c=>c.teachers)),'lärare/klass'],[G.les.filter(l=>l.kind==='resurs').length,'resurspass'],[G.les.filter(l=>l.kind==='lesson'&&l.teachers.length>1).length,'tvålärarpass'],[G.noise,'brus'],[Math.round(G.bytes.length/1024)+' KB','fil'],[G.ms+' ms','tid']];
+  document.getElementById('sG').innerHTML=cards.map(([n,l])=>`<div class="sc"><div class="n">${n}</div><div class="l">${l}</div></div>`).join('');
+  const W=[];if(G.failed)W.push({t:G.failed>G.placed*.05?'e':'w',m:`${G.failed} lektionspass kunde inte placeras — öka klassrum/bemanning eller förläng skoldagen`});
+  const nC=G.checks.teacher+G.checks.class+G.checks.room;if(+G.P.dq===0&&nC)W.push({t:'e',m:`Perfekt-läge men ${nC} konflikter`});
+  const low=cv.filter(c=>c.n<15);if(low.length)W.push({t:'w',m:`${low.length} klass(er) med <15 lektioner`});
+  document.getElementById('wG').innerHTML=W.map(w=>`<div class="wn ${w.t}">${esc(w.m)}</div>`).join('');
+  const tabs=[['preview','Förhandsvisning'],['checks','Kontroller'],['teachers','Personal'],['classes','Klasser'],['groups','Grupper'],['rooms','Salar'],['calendar','Kalender'],['log','Logg']];
+  document.getElementById('tB').innerHTML=tabs.map(([t,l])=>`<button class="${t===activeTab?'on':''}" onclick="showTab('${t}')">${l}</button>`).join('');renderTab()}
+function showTab(t){activeTab=t;render()}
+function renderTab(){const G=GEN,el=document.getElementById('tC');if(!G)return;const tbl=(h,rows)=>`<div class="th"><table class="dt"><thead><tr>${h.map(x=>`<th>${x}</th>`).join('')}</tr></thead><tbody>${rows.map(r=>`<tr>${r.map(c=>`<td>${c}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+  if(activeTab==='preview'){const ls=G.text.split(/\r?\n/);el.innerHTML=`<div class="pre">${esc(ls.slice(0,160).join('\n')+(ls.length>160?'\n\n… ('+(ls.length-160)+' rader till)':''))}</div>`}
+  else if(activeTab==='checks'){const c=G.checks;const cell=(n,l)=>`<div class="${n?'bad':'good'}"><b>${n}</b>${l}</div>`;el.innerHTML=`<div class="chk">${cell(c.teacher,'lärarkonflikter')}${cell(c.class,'klasskonflikter')}${cell(c.room,'salskonflikter')}${cell(G.failed,'oplacerade pass')}</div><div class="lg">${c.examples.map(x=>`<div class="wr">${esc(x)}</div>`).join('')||'<div class="ok">Inga konflikter i lektioner, lunch, mentorstid, personalposter eller salar.</div>'}</div>`}
+  else if(activeTab==='teachers'){const rw=Object.entries(G.tStats).sort((a,b)=>(a[1].role>b[1].role?1:a[1].role<b[1].role?-1:0)||b[1].hrs-a[1].hrs);el.innerHTML=tbl(['Sign','Namn','Roll','Titel','Stadium','%','Undervisn. h','Pass','Kompetens','Mentor för','Hemsal','Enhet','Status'],rw.map(([s,t])=>[`<span style="font-family:var(--mn)">${esc(s)}</span>`,esc(t.nm),t.role,esc(t.title),t.stages,t.ct+'%',t.hrs,t.lc,`<span style="font-size:8px;color:var(--mt)">${t.comps}</span>`,t.mentor,t.home,esc(t.site),t.leave?'<span style="color:var(--dg)">ledig</span>':t.quit?`slutar v${t.quit}`:t.archived?'arkiverad (dubblett)':t.vik?'vikarie':'']))}
+  else if(activeTab==='classes'){el.innerHTML=tbl(['Klass','Lektioner','Min/vecka','Lärare','Salar','Mentorer','Hemsal','SvA','Tvålärare'],Object.entries(G.cStats).map(([c,s])=>[`<b>${esc(c)}</b>`,s.n,s.mins,s.teachers,s.rooms,s.mentors,s.home,s.sva?'✓':'',s.co?'✓':'']))}
+  else if(activeTab==='groups'){el.innerHTML=tbl(['Grupp','Klass','Lärare','IClass'],[...G.groups.values()].map(g=>[esc(g.name),g.isClass?1:0,g.teachers.join(','),g.iclass.join(',')]))}
+  else if(activeTab==='rooms'){const u={};G.les.filter(l=>l.room&&l.kind==='lesson').forEach(l=>u[l.room]=(u[l.room]||0)+1);el.innerHTML=tbl(['Sal','Typ','Lektioner/vecka'],G.rooms.map(r=>[r,G.roomType[r],u[r]||0]))}
+  else if(activeTab==='calendar'){el.innerHTML=`<div class="cal">Läsår ${G.cal.label}: ${isoD(G.cal.start)} – ${isoD(G.cal.end)}\nSkolveckor: ${compressWeeks(G.cal.weeks)}\nStudiedagar: ${G.cal.studiedagar.map(d=>isoD(d)).join(', ')||'–'}\n\n${Object.entries(G.per).map(([k,p])=>`${k}: ${compressWeeks(p.weeks)}`).join('\n')}\n\nSchoolYear: ${G.cal.segs.map(s=>s.str).join(', ')}</div>`}
+  else if(activeTab==='log'){el.innerHTML=`<div class="lg">${G.log.map(e=>`<div class="${e.t}">${esc(e.m)}</div>`).join('')}</div>`}}
+function saveBytes(bytes,fname){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([bytes],{type:'application/octet-stream'}));a.download=fname;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),2000)}
+async function dl(){if(!GEN)return;const P=collectParams();const n=+P.batch||1;
+  if(n<=1){saveBytes(GEN.bytes,GEN.fname);return}
+  R=Math.random;const kom=(P.kommun||'').trim()||fictionalKommun();
+  for(let i=0;i<n;i++){const Q=Object.assign({},P,{sd:ri(1,9999),nm:'',kommun:kom});if(i>0){Q.cy=clamp(+P.cy+ri(-1,1),1,6)}
+    const G=generate(Q);saveBytes(G.bytes,G.fname);await new Promise(r=>setTimeout(r,600))}}
+if(typeof document!=='undefined'&&document.getElementById('params'))buildUI();
+if(typeof module!=='undefined')module.exports={generate,DEF,compressWeeks,encodeCP1252};
+</script>
+</body>
+</html>
